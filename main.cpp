@@ -1,9 +1,17 @@
 #include <iostream>
+#include <stdio.h>
 
 int main(){
+    int a = 0;
     
-    std::cout << "Hello World!!!" << std::endl;
-    std::cout << "And that is not Hello World!!!" << endl;
+    a++;
     
+    std::cout << "Hello World!!! " << a << std::endl;
+    
+    a++;
+    
+    std::cout << "And that is not 111 Hello World!!!" << a << std::endl;
+    
+    getchar();
     return 0;
 }
