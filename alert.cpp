@@ -192,5 +192,30 @@ void alert::findSeverity(std::string EnumName) {
 	}
 }
 
+std::string alert::getOrigin() {
+	return this->k.origin;
+}
+
+std::string alert::getType() {
+	return this->k.type;
+}
+
+int alert::getSubkey() {
+	return this->k.subkey;
+}
+
+int alert::operator==(alert &cur) {
+	if (this->k.origin != cur.k.origin){
+		return 0;
+	}	
+	if (this->k.type != cur.k.type) {
+	  return 0;
+	}		
+	if (this->k.subkey != cur.k.subkey) {
+	  return 0;
+	}
+	return 1;
+}
+	
 
 

@@ -65,4 +65,8 @@ public:
 	friend std::fstream & operator << (std::fstream &, alert &);
 	void findPriority(std::string EnumName);
 	void findSeverity(std::string EnumName);
+	std::string getOrigin();
+	std::string getType();
+	int getSubkey();	
+	int operator==(alert &);
 };

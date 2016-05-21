@@ -1,13 +1,10 @@
 #include "bd.h"
-#include <iostream>
-#include <fstream>
-#include <cstdio>
-#include <ctime>
-#include <exception>
-#include <string>
-#include <sstream>
-#include <vector>
-#include <iterator>
+
+class bd {
+private:
+private:
+	std::string fileName;
+public:
 
 	bd::bd() {
 		this->fileName = "AlertRequestHandler.txt";
@@ -50,8 +47,9 @@
 	int bd::put(alert newAlert) {
 		std::vector<alert> info = this->ReadDataBase();
 		if (info.empty()) {
-
+			return -1;
 		}
+
 		return 0;
 	}
 
@@ -74,3 +72,10 @@
 		file.close();
 	}	
 
+	int bd::compareAlert(alert master, alert slave) {
+		if (master == slave) {
+			return 1;
+		}
+		return 0;
+	}
+};
