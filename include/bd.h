@@ -13,5 +13,5 @@ public:
 	int remove(alert);
 	void WriteSingleObject(alert);
 	int compareAlert(alert &, alert &);
-        int checkTime(alert, alert);
+	int checkTime(alert, alert);
 };

@@ -1,5 +1,3 @@
-#pragma once
-
 #include <iostream>
 #include <vector>
 
@@ -65,8 +63,8 @@ public:
 	void findSeverity(std::string EnumName);
 	std::string getOrigin();
 	std::string getType();
-	int getSubkey();
-        std::string getSystime();	
+	int getSubkey();	
+	std::string getSystime();
 	int operator==(alert &);
-        long getDuration();
+	long getDuration();
 };

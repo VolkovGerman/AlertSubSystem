@@ -32,7 +32,7 @@ std::string alert::GetLocalTime() {
 	std::string Time;
 	char str[6];
 	time_t t;
-	struct tm *t_m, *t_m1;
+	struct tm *t_m;
 	t = time(NULL);
 	t_m = localtime(&t);
 
@@ -64,7 +64,7 @@ std::string alert::AllTime() {
 	char str[25];
 	time_t szClock;
 	time(&szClock);
-	sprintf(str, "%013ld", szClock);
+	sprintf_s(str, "%013ld", szClock);
 	Time += str;
 	return Time;
 }
@@ -124,8 +124,7 @@ std::fstream & operator << (std::fstream &file, alert & newAlert) {
 //OUT
 std::fstream & operator >>(std::fstream &file, alert &newAlert) {
 	if (file.peek() == EOF)
-		return file;
-	int value;
+		return file;	
 	std::string  ss, buf;
 	getline(file, ss, '*');	
 	std::stringstream ff;
@@ -135,7 +134,7 @@ std::fstream & operator >>(std::fstream &file, alert &newAlert) {
 	getline(ff, buf, ';');
 	newAlert.k.type = buf.c_str();
 	getline(ff, buf, ';');
-	newAlert.k.subkey = atoi(buf.c_str());   
+	newAlert.k.subkey = atoi(buf.c_str());   //можно неявно
 	getline(ff, buf, ';');
 	newAlert.findPriority(buf);
 	getline(ff, buf, ';');
@@ -233,9 +232,11 @@ int alert::operator==(alert &cur) {
 	}
 	return 1;
 }
-
-
 	
-
-
+long alert::getDuration() {
+	return this->node.limTime.lday * 86400 + 
+				 this->node.limTime.lhour * 3600 + 
+				 this->node.limTime.lminute * 60 + 
+				 this->node.limTime.lsecond;
+}
 

@@ -1,7 +1,6 @@
 #include <iostream>
 #include <stdio.h>
 #include <unistd.h>
-#include "include/alert.h"
 #include "include/bd.h"
 #include "include/email.h"
 
@@ -24,6 +23,11 @@ int sendBack(std::string mail){
 
 int main(){
     
+    bd obj;
+    alert newAlert;
+    std::cout << "hello";
+    //obj.ReadDataBase();
+    obj.put(newAlert);
     //email mail1;
     //mail1.send();
     
@@ -87,6 +91,6 @@ int main(){
         sleep(1);
     }
     */
-    getchar();
+    //getchar();
     return 0;
 }
