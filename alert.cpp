@@ -209,6 +209,10 @@ int alert::getSubkey() {
 	return this->k.subkey;
 }
 
+std::string alert::getSystime() {
+	return this->node.sysTime;
+}
+
 int alert::operator==(alert &cur) {
 	int fl = 0;
 	if (this->k.origin.empty() || cur.k.origin.empty()) {
@@ -229,6 +233,15 @@ int alert::operator==(alert &cur) {
 	}
 	return 1;
 }
+
+long alert::getDuration() {
+	return this->node.limTime.lday * 86400 + 
+				 this->node.limTime.lhour * 3600 + 
+				 this->node.limTime.lminute * 60 + 
+				 this->node.limTime.lsecond;
+}
+
+
 	
 
 

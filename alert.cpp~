@@ -135,7 +135,7 @@ std::fstream & operator >>(std::fstream &file, alert &newAlert) {
 	getline(ff, buf, ';');
 	newAlert.k.type = buf.c_str();
 	getline(ff, buf, ';');
-	newAlert.k.subkey = atoi(buf.c_str());   //����� ������
+	newAlert.k.subkey = atoi(buf.c_str());   
 	getline(ff, buf, ';');
 	newAlert.findPriority(buf);
 	getline(ff, buf, ';');
@@ -209,6 +209,10 @@ int alert::getSubkey() {
 	return this->k.subkey;
 }
 
+std::string alert::getSystime() {
+	return this->node.sysTime;
+}
+
 int alert::operator==(alert &cur) {
 	int fl = 0;
 	if (this->k.origin.empty() || cur.k.origin.empty()) {
@@ -229,6 +233,8 @@ int alert::operator==(alert &cur) {
 	}
 	return 1;
 }
+
+
 	
 
 
