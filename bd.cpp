@@ -74,9 +74,21 @@ int bd::put(alert newAlert) {
 		return 1;
 	}
 
-int bd::get(alert newAlert, alert &out) {
-	return 0;
-}
+std::vector<alert> bd::get(alert newAlert) {
+		std::vector<alert> vec;
+		std::vector<alert> info = this->ReadDataBase();
+		std::vector<alert>::iterator cur = info.begin(), end = info.end();
+		if (info.empty()) {
+			return vec;
+		}
+		while(cur!=end) {
+			if (compareAlert(newAlert, *cur)) {
+				vec.push_back(*cur);
+			}			
+			cur++;
+		}
+		return vec;
+	}
 
 int bd::remove(alert newAlert, alert &out) {
 	return 0;

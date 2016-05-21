@@ -9,7 +9,7 @@ public:
 	std::vector<alert> ReadDataBase();
 	int WriteDataBase(std::vector<alert> &);
 	int put(alert);
-	int get(alert,alert &);
+	std::vector<alert> get(alert);
 	int remove(alert, alert &);
 	void WriteSingleObject(alert);
 	int compareAlert(alert, alert);

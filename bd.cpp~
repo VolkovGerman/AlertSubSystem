@@ -49,13 +49,30 @@ int bd::WriteDataBase(std::vector<alert> &vec) {
 }
 
 int bd::put(alert newAlert) {
-	std::vector<alert> info = this->ReadDataBase();
-	if (info.empty()) {
-		return -1;
+		std::vector<alert> info = this->ReadDataBase();
+		std::vector<alert>::iterator cur = info.begin(), end = info.end();		
+		int fl = 0;
+		if (info.empty()) {
+			return -1;
+		}
+		while(1) {
+			if (compareAlert(newAlert, *cur)) {
+				if (checkTime(newAlert, *cur)) {
+					info.erase(cur);
+					info.push_back(newAlert);
+					return 1;
+				}
+				else {
+					return 0;
+				}
+			}
+			if (cur != end) {
+				cur++;
+			}
+		}
+		this->WriteSingleObject(newAlert);
+		return 1;
 	}
-
-	return 0;
-}
 
 int bd::get(alert newAlert, alert &out) {
 	return 0;
