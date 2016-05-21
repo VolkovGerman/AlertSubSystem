@@ -1,10 +1,13 @@
-#include "bd.h"
+#include "include/bd.h"
+#include <fstream>
+#include <cstdio>
+#include <ctime>
+#include <exception>
+#include <string>
+#include <sstream>
+#include <vector>
+#include <iterator>
 
-class bd {
-private:
-private:
-	std::string fileName;
-public:
 
 	bd::bd() {
 		this->fileName = "AlertRequestHandler.txt";
@@ -53,11 +56,11 @@ public:
 		return 0;
 	}
 
-	int bd::get(alert newAlert) {
+	int bd::get(alert newAlert, alert &out) {
 		return 0;
 	}
 
-	int bd::remove(alert newAlert) {
+	int bd::remove(alert newAlert, alert &out) {
 		return 0;
 	}
 
@@ -78,4 +81,3 @@ public:
 		}
 		return 0;
 	}
-};

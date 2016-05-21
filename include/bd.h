@@ -1,26 +1,16 @@
-#include "alert.h"
-#include <iostream>
-#include <fstream>
-#include <cstdio>
-#include <ctime>
-#include <exception>
-#include <string>
-#include <sstream>
-#include <vector>
-#include <iterator>
+#include "include/alert.h"
 
 class bd {
-private:
 private:
 	std::string fileName;
 public:
 	bd();
-	~bd() {}
-	std::vector<alert> bd::ReadDataBase();
-	int WriteDataBase(std::vector<alert>);
+	~bd();
+	std::vector<alert> ReadDataBase();
+	int WriteDataBase(std::vector<alert> &);
 	int put(alert);
-	int get(alert);
-	int remove(alert);
+	int get(alert,alert &);
+	int remove(alert, alert &);
 	void WriteSingleObject(alert);
 	int compareAlert(alert, alert);
-	};
+};

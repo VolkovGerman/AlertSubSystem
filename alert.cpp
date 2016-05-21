@@ -1,5 +1,8 @@
-#include "alert.h"
-
+#include "include/alert.h"
+#include <string>
+#include <sstream>
+#include <ctime>
+#include <fstream>
 
 alert::alert() {	
 	this->prior.push_back("HIGH");
