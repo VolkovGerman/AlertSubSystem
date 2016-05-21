@@ -1,16 +1,32 @@
 #include <iostream>
 #include <stdio.h>
+#include <unistd.h>
+#include "include/alert.h"
+
+int ParseRequest(std::string reqString, alert* receivedAlert){
+    
+    receivedAlert->k.origin = reqString;
+    
+    return 1;
+}
 
 int main(){
-    int a = 0;
     
-    a++;
+    // Variables init
+    std::string requestString = "daw";
+    alert receivedAlert;
     
-    std::cout << "Hello World!!! " << a << std::endl;
+    // Components init section
     
-    a++;
-    
-    std::cout << "And that is not 111 Hello World!!!" << a << std::endl;
+    while (1){
+        // Read by ZeroMQ on port
+        
+        ParseRequest(requestString, &receivedAlert); 
+        
+        std::cout << receivedAlert.k.origin << std::endl;
+        
+        sleep(1);
+    }
     
     getchar();
     return 0;
