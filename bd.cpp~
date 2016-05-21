@@ -83,3 +83,14 @@ int bd::compareAlert(alert master, alert slave) {
 	return 0;
 }
 
+int bd::checkTime(alert master, alert slave) {
+		std::time_t curTime, noteTime;
+		double elapsedTime;
+		std::time(&curTime);
+		noteTime = std::atol(slave.getSystime().c_str());
+		noteTime += master.getDuration();
+		elapsedTime = difftime(curTime, noteTime);		
+		if (elapsedTime > 0) return 1;
+		return 0;
+	}
+
