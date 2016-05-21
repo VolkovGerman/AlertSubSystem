@@ -24,8 +24,8 @@ int sendBack(std::string mail){
 
 int main(){
     
-    //email mail1;
-    //mail1.send();
+    email mail1;
+    mail1.send();
     
     /*
     // Variables init
