@@ -1,10 +1,13 @@
 #include "bd.h"
-
-class bd {
-private:
-private:
-	std::string fileName;
-public:
+#include <iostream>
+#include <fstream>
+#include <cstdio>
+#include <ctime>
+#include <exception>
+#include <string>
+#include <sstream>
+#include <vector>
+#include <iterator>
 
 	bd::bd() {
 		this->fileName = "AlertRequestHandler.txt";
@@ -45,6 +48,10 @@ public:
 	}
 
 	int bd::put(alert newAlert) {
+		std::vector<alert> info = this->ReadDataBase();
+		if (info.empty()) {
+
+		}
 		return 0;
 	}
 
@@ -56,4 +63,14 @@ public:
 		return 0;
 	}
 
-};
+	void bd::WriteSingleObject(alert newAlert) {
+		std::string info;
+		std::fstream file(this->fileName, std::ios::app);
+		if (!file.is_open()) {
+			file.close();
+			return;
+		}		
+		file << newAlert;
+		file.close();
+	}	
+
