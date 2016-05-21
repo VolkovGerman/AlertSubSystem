@@ -90,9 +90,26 @@ std::vector<alert> bd::get(alert newAlert) {
 		return vec;
 	}
 
-int bd::remove(alert newAlert, alert &out) {
-	return 0;
-}
+int bd::remove(alert newAlert) {		
+		std::vector<alert> info = this->ReadDataBase();
+		std::vector<alert>::iterator cur = info.begin(), end = info.end();
+		std::vector<alert> restore;
+		int remove = 0;
+		if (info.empty()) {
+			return -1;
+		}		
+		while (cur!=end) {
+			if (compareAlert(newAlert, *cur)) {				
+				remove = 1;
+			}
+			else {
+				restore.push_back(*cur);
+			}
+			cur++;
+		}
+		this->WriteDataBase(restore);
+		return remove;
+	}
 
 void bd::WriteSingleObject(alert newAlert) {
 	std::string info;

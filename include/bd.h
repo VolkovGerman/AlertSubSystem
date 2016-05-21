@@ -10,7 +10,7 @@ public:
 	int WriteDataBase(std::vector<alert> &);
 	int put(alert);
 	std::vector<alert> get(alert);
-	int remove(alert, alert &);
+	int remove(alert);
 	void WriteSingleObject(alert);
 	int compareAlert(alert, alert);
         int checkTime(alert, alert);
