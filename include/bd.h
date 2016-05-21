@@ -12,6 +12,6 @@ public:
 	std::vector<alert> get(alert);
 	int remove(alert);
 	void WriteSingleObject(alert);
-	int compareAlert(alert, alert);
+	int compareAlert(alert &, alert &);
         int checkTime(alert, alert);
 };

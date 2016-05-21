@@ -122,11 +122,11 @@ void bd::WriteSingleObject(alert newAlert) {
 	file.close();
 }	
 
-int bd::compareAlert(alert master, alert slave) {
-	if (master == slave) {
-		return 1;
-	}
-	return 0;
+int bd::compareAlert(alert &master, alert &slave) {
+    if (master == slave) {
+      return 1;
+    }
+    return 0;
 }
 
 int bd::checkTime(alert master, alert slave) {
