@@ -50,7 +50,7 @@ struct value {
 };
 
 class alert {
-public:
+private:
 	std::vector<std::string> prior;
 	std::vector<std::string> sever;		
 	key k;

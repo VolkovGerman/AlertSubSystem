@@ -1,4 +1,4 @@
-#include "include/alert.h"
+#include "alert.h"
 
 
 alert::alert() {	
@@ -22,7 +22,7 @@ alert::alert() {
 	this->node.limTime.lsecond = 0;
 	this->node.message = "mes1";	
 }
-/*
+
 std::string alert::GetLocalTime() {
 	std::string Time;
 	char str[6];
@@ -130,7 +130,7 @@ std::fstream & operator >>(std::fstream &file, alert &newAlert) {
 	getline(ff, buf, ';');
 	newAlert.k.type = buf.c_str();
 	getline(ff, buf, ';');
-	newAlert.k.subkey = 10;//atoi(buf.c_str());   //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+	newAlert.k.subkey = atoi(buf.c_str());   //можно неявно
 	getline(ff, buf, ';');
 	newAlert.findPriority(buf);
 	getline(ff, buf, ';');
@@ -191,4 +191,6 @@ void alert::findSeverity(std::string EnumName) {
 		this->node.sev = DEBUG;
 	}
 }
-*/
+
+
+
