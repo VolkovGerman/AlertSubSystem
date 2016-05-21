@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "include/alert.h"
+#include "include/bd.h"
 
 int ParseRequest(std::string reqString, alert* receivedAlert){
     
@@ -12,11 +13,20 @@ int ParseRequest(std::string reqString, alert* receivedAlert){
     return mode;
 }
 
+int sendEmail(alert alertData){
+    return 0;
+}
+
+int sendBack(std::string mail){
+    return 0;
+}
+
 int main(){
     
     // Variables init
     std::string requestString = "daw";
     alert receivedAlert;
+    bd database;
     alert *listOfRequestedAlerts;
     
     // Components init section
@@ -28,20 +38,20 @@ int main(){
         
         int receivedFromBD = 0;
         if (mode >= 0 && mode <= 19) {
-            receivedFromBD = bd.put(receivedAlert, listOfRequestedAlerts);
+            receivedFromBD = database.put(receivedAlert, listOfRequestedAlerts);
         } else if (mode >= 20 && mode <= 39) {
-            receivedFromBD = bd.get(receivedAlert, listOfRequestedAlerts);
+            receivedFromBD = database.get(receivedAlert, listOfRequestedAlerts);
         } else if (mode >= 40 && mode <= 59) {
-            receivedFromBD = bd.delete(receivedAlert, listOfRequestedAlerts);
+            receivedFromBD = database.remove(receivedAlert, listOfRequestedAlerts);
         }
         
         // Serialize listOfRequestedAlerts, which will be send back
         std::string res = serialize(listOfRequestedAlerts); 
         sendBack(res);
         
-        switch receivedFromBD{
+        switch (receivedFromBD){
             case 0:
-                cout << "Error: There was an error working with bd" << endl;
+                std::cout << "Error: There was an error working with bd" << std::endl;
                 break;
             case 1:
                 // Record exist(s), email will NOT be sent
