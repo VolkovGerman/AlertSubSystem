@@ -3,12 +3,13 @@
 #include <unistd.h>
 #include "include/alert.h"
 #include "include/bd.h"
+#include "include/email.h"
 
 int ParseRequest(std::string reqString, alert* receivedAlert){
     
     int mode = (int)reqString[0];
     
-    receivedAlert->k.origin = reqString;
+    //receivedAlert->k.origin = reqString;
     
     return mode;
 }
@@ -23,6 +24,10 @@ int sendBack(std::string mail){
 
 int main(){
     
+    email mail1;
+    mail1.send();
+    
+    /*
     // Variables init
     std::string requestString = "daw";
     alert receivedAlert;
@@ -81,7 +86,7 @@ int main(){
         std::cout << receivedAlert.k.origin << std::endl;
         sleep(1);
     }
-    
+    */
     getchar();
     return 0;
 }

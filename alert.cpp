@@ -2,7 +2,7 @@
 #include <string>
 #include <sstream>
 #include <ctime>
-#include <fstream>
+//#include <fstream>
 
 alert::alert() {	
 	this->prior.push_back("HIGH");
@@ -25,7 +25,7 @@ alert::alert() {
 	this->node.limTime.lsecond = 0;
 	this->node.message = "mes1";	
 }
-
+/*
 std::string alert::GetLocalTime() {
 	std::string Time;
 	char str[6];
@@ -133,7 +133,7 @@ std::fstream & operator >>(std::fstream &file, alert &newAlert) {
 	getline(ff, buf, ';');
 	newAlert.k.type = buf.c_str();
 	getline(ff, buf, ';');
-	newAlert.k.subkey = atoi(buf.c_str());   //можно неявно
+	newAlert.k.subkey = atoi(buf.c_str());   //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	getline(ff, buf, ';');
 	newAlert.findPriority(buf);
 	getline(ff, buf, ';');
@@ -222,3 +222,4 @@ int alert::operator==(alert &cur) {
 	
 
 
+*/
