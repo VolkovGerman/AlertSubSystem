@@ -1,12 +1,9 @@
 #include "include/email.h"
+#include "include/alert.h"
 #include <curl/curl.h>
 #include <string>
 #include <string.h>
 #include <stdio.h>
-
-#define FROM    "<alertsubsystem@gmail.com>"
-#define TO      "<Volkov.german.1997@gmail.com>"
-#define CC      "<Volkov.german.1997@mail.ru>"
 
 static const char *payload_text[1];
 
@@ -37,8 +34,8 @@ static size_t payload_source(void *ptr, size_t size, size_t nmemb, void *userp) 
 }
 
 email::email(){
-    senderEmail = "<alertsubsystem@gmail.com>";
-    recipientEmail = "";
+    senderEmail = "alertsubsystem@gmail.com";
+    recipientEmail = "volkov.german.1997@mail.ru";
     
     date = "21.05.2016";
     time = "19:99";
@@ -103,42 +100,54 @@ std::string email::getMessage(){
     return message;
 }
     
-int email::send(){
+int email::sendAlert(alert newAlert){
     
-    std::string resultMail = "";
+    // Making nesassary strings
+    char subKeyFromChars[256];
+    sprintf(subKeyFromChars, "%d", newAlert.getSubkey());
+    std::string subKey(subKeyFromChars);
     
-    resultMail += "To: " + this->getRecipient() + "\r\n";
-    resultMail += "From: " + this->senderEmail + "\r\n";
-    resultMail += "Content-Type: text/html; charset=\"us-ascii\"\r\n";
-    resultMail += "Mime-version: 1.0\r\n";
-    resultMail += "Subject: AS Notification\r\n";
-    resultMail += "\r\n";
-    resultMail += "<div style=\"margin-bottom: 20px; line-height: 60px; text-align: center; background-color: rgb(166, 63, 63); font-size: 30px; font-weight: bold; color: white;\">";
-    resultMail += "AlertSubSystem";
-    resultMail += "</div>";
-    resultMail += "<table style=\"width: 100%; margin: 0px 0px 20px; text-align: center;\">";
-    resultMail += "<thead>";
-    resultMail += "<tr style=\"line-height: 35px; font-size: 16px;\">";
-    resultMail += "<td width=15%>Dattttttte</td>";
-    resultMail += "<td width=15%>Time</td>";
-    resultMail += "<td width=15%>Time</td>";
-    resultMail += "<td width=15%>Priority</td>";
-    resultMail += "<td width=15%>Severity</td>";
-    resultMail += "<td width=40%>Message</td>";
-    resultMail += "</tr>";
-    resultMail += "</thead>";
-    resultMail += "<tbody>";
-    resultMail += "<tr style=\"line-height: 20px; font-size: 14px;\">";
-    resultMail += "<td width=15%>10.05.2016</td>";
-    resultMail += "<td width=15%>15:05:32</td>";
-    resultMail += "<td width=15%>High</td>";
-    resultMail += "<td width=15%>Error</td>";
-    resultMail += "<td width=40%>Second controller handler crush. You need to restart you operating system.</td>";
-    resultMail += "</tr>";
-    resultMail += "</tbody>";
-    resultMail += "</table>";
-    resultMail += "<div style=\"line-height: 30px; vertical-align: middle; padding: 15px 5px; background-color: rgb(166, 63, 63); text-align: center;\"><a href=\"mailto:Volkov.german.1997@gmail.com\" style=\"color: white; font-size: 15px;\">German Volkov</a> <span style=\"color: white;\">&</span> <a href=\"mailto:Volkov.german.1997@gmail.com\" style=\"color: white; font-size: 15px;\">Nikolay Bylnov</a></div>\r\n";
-                  
+    std::string resultMail =
+        "To: <volkov.german.1997@mail.ru>\r\n"
+        "From: " + this->senderEmail + "\r\n"
+        "Content-Type: text/html; charset=\"us-ascii\"\r\n"
+        "Mime-version: 1.0\r\n"
+        "Subject: AS Notification\r\n"
+        "\r\n"
+        "<table style='width: 100%; border-collapse: collapse;' border=1 cellpadding=5>"
+            "<caption align='center' style='padding-bottom: 20px'>"
+                "AlertSubSystem Notification"
+            "</caption>"
+            "<tr>"
+                "<td style='width:20%; text-align: right; font-weight: bold;'>Origin:</td>"
+                "<td>" + newAlert.getOrigin() + "</td>"
+            "</tr>"
+            "<tr>"
+                "<td style='width:20%; text-align: right; font-weight: bold;'>Type:</td>"
+                "<td>" + newAlert.getType() + "</td>"
+            "</tr>"
+            "<tr>"
+                "<td style='width:20%; text-align: right; font-weight: bold;'>Subkey:</td>"    
+                "<td>" + newAlert.getStringSubkey() + "</td>"
+            "</tr>" 
+            "<tr>"
+                "<td style='width:20%; text-align: right; font-weight: bold;'>Date and time:</td>"
+                "<td>" + newAlert.getTime() + "</td>"
+            "</tr>"
+            "<tr>"
+                "<td style='width:20%; text-align: right; font-weight: bold;'>Priority:</td>"
+                "<td>" + newAlert.getPriority().c_str() + "</td>"
+            "</tr>"
+            "<tr>"
+                "<td style='width:20%; text-align: right; font-weight: bold;'>Severity:</td>"
+                "<td>" + newAlert.getSeverity().c_str() + "</td>"
+            "</tr>"
+            "<tr>"
+                "<td style='width:20%; text-align: right; font-weight: bold;'>Message:</td>"
+                "<td>" + newAlert.getMessage().c_str() + "</td>"
+            "</tr>"
+        "</table>";
+                   
     payload_text[0] = resultMail.c_str();
     
     CURL *curl;
@@ -149,19 +158,17 @@ int email::send(){
     upload_ctx.lines_read = 0;
 
     curl = curl_easy_init();
+    
     if(curl) {
-        /* Set username and password */
         curl_easy_setopt(curl, CURLOPT_USERNAME, "alertsubsystem@gmail.com");
         curl_easy_setopt(curl, CURLOPT_PASSWORD, "alert365");
-
-        /* This is the URL for your mailserver. Note the use of smtps:// rather
-            * than smtp:// to request a SSL based connection. */
+        
         curl_easy_setopt(curl, CURLOPT_URL, "smtp://smtp.gmail.com:587");
         curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
 
-        curl_easy_setopt(curl, CURLOPT_MAIL_FROM, FROM);
+        curl_easy_setopt(curl, CURLOPT_MAIL_FROM, ("<" + this->senderEmail + ">").c_str());
 
-        recipients = curl_slist_append(recipients, TO);
+        recipients = curl_slist_append(recipients, ("<" + this->getRecipient() + ">").c_str());
         curl_easy_setopt(curl, CURLOPT_MAIL_RCPT, recipients);
 
         curl_easy_setopt(curl, CURLOPT_READFUNCTION, payload_source);

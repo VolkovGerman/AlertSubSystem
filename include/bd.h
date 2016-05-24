@@ -1,3 +1,5 @@
+#pragma once
+
 #include "alert.h"
 
 class bd {

@@ -1,96 +1,109 @@
 #include <iostream>
 #include <stdio.h>
 #include <unistd.h>
+#include <zmq.hpp>
+#include <string>
+#include <vector>
+#include <unistd.h>
 #include "include/bd.h"
 #include "include/email.h"
+#include "include/alert.h"
 
-int ParseRequest(std::string reqString, alert* receivedAlert){
-    
-    int mode = (int)reqString[0];
-    
-    //receivedAlert->k.origin = reqString;
-    
-    return mode;
-}
-
-int sendEmail(alert alertData){
-    return 0;
-}
-
-int sendBack(std::string mail){
-    return 0;
-}
-
-int main(){
-    
-    bd obj;
-    alert newAlert;
-    std::cout << "hello";
-    //obj.ReadDataBase();
-    obj.put(newAlert);
-    //email mail1;
-    //mail1.send();
-    
-    /*
+int main(int argc, char* argv[]){
     // Variables init
     std::string requestString = "daw";
     alert receivedAlert;
     bd database;
-    alert *listOfRequestedAlerts;
+    std::vector<alert> listOfRequestedAlerts;  
+    email mail;
     
-    // Components init section
+    mail.setRecipient("Volkov.german.1997@gmail.com"); 
+    
+    // ZeroMQ init
+    zmq::context_t context (1);
+    zmq::socket_t socket (context, ZMQ_REP);
+    socket.bind ("tcp://*:5555"); 
     
     while (1){
-        // Read by ZeroMQ on port
+        // Wait for the request from client
+        zmq::message_t request;
+        socket.recv (&request);
+        std::string reqMessage = std::string(static_cast<char*>(request.data()), request.size());
         
-        int mode = ParseRequest(requestString, &receivedAlert); 
+        std::cout << reqMessage << std::endl;
+        
+        // Parse alert from request message
+        int mode = receivedAlert.initFromString(reqMessage); 
+        
+        std::cout << "dawadwadwdawd" << std::endl;
         
         int receivedFromBD = 0;
-        if (mode >= 0 && mode <= 19) {
-            receivedFromBD = database.put(receivedAlert, listOfRequestedAlerts);
-        } else if (mode >= 20 && mode <= 39) {
-            receivedFromBD = database.get(receivedAlert, listOfRequestedAlerts);
-        } else if (mode >= 40 && mode <= 59) {
-            receivedFromBD = database.remove(receivedAlert, listOfRequestedAlerts);
+        switch (mode) {
+            case 50:
+                receivedFromBD = database.put(receivedAlert);
+                break;
+            case 51:
+                // receivedFromBD = database.get(receivedAlert, listOfRequestedAlerts);
+                listOfRequestedAlerts = database.get(receivedAlert);
+                (listOfRequestedAlerts.empty()) ? receivedFromBD = 3 : receivedFromBD = 1;
+                break;
+            case 52:
+                receivedFromBD = database.remove(receivedAlert);
+                break;
         }
         
+        std::cout << "---" << receivedFromBD << std::endl;
+        
         // Serialize listOfRequestedAlerts, which will be send back
-        std::string res = serialize(listOfRequestedAlerts); 
-        sendBack(res);
+        //std::string res = serialize(listOfRequestedAlerts); 
+        //sendBack(res);
         
         switch (receivedFromBD){
             case 0:
-                std::cout << "Error: There was an error working with bd" << std::endl;
+                // Error: There was an error working with bd
+                // It's time for logger
+                
                 break;
             case 1:
                 // Record exist(s), email will NOT be sent
+                // It's time for logger
+                
+                // - временно для демонстрации
+                mail.sendAlert(receivedAlert);
+                // - удалить как только появится возможность
                 
                 break;
             case 2:
                 // Record exist(s), email will be sent
+                // It's time for logger
+
                 
-                sendEmail(receivedAlert);
+                mail.sendAlert(receivedAlert);
+
                 break;
             case 3:
                 // Record do not exist, email will NOT be sent
+                // It's time for logger
                 
                 break;
             case 4:
                 // Record do not exist, email will be sent
+                // It's time for logger
+
+                mail.sendAlert(receivedAlert);
                 
-                sendEmail(receivedAlert);
                 break;
             default: 
-                cout << "Error: Wrong value was received from database."
+                std::cout << "Error: Wrong value was received from database." << std::endl;
                 break;
         }
         
-        // Trace info and sleep
-        // WE NEED LOGGER!
-        std::cout << receivedAlert.k.origin << std::endl;
-        sleep(1);
+        //  Send reply back to client
+        zmq::message_t reply (4);
+        memcpy (reply.data(), "Done", 4);
+        socket.send (reply);
     }
-    */
-    //getchar();
+    
+    getchar();
     return 0;
 }

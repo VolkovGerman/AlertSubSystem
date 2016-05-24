@@ -15,7 +15,7 @@ alert::alert() {
 	this->sever.push_back("WARNING");
 	this->sever.push_back("DEBUG");
 
-	this->k.origin = "./a.out";
+	this->k.origin = "./c.out";
 	this->k.type = "fork()";
 	this->k.subkey = 123;
 	this->node.pr = HIGH;
@@ -23,7 +23,7 @@ alert::alert() {
 	this->node.state = "OLD";
 	this->node.limTime.lday    = 0;
 	this->node.limTime.lhour   = 0;
-	this->node.limTime.lminute = 2;
+	this->node.limTime.lminute = 0;
 	this->node.limTime.lsecond = 0;
 	this->node.message = "mes1";	
 }
@@ -49,6 +49,20 @@ std::string alert::GetLocalTime() {
 	sprintf(str, "%02d", t_m->tm_sec);
 	Time += str;
 	return Time;
+}
+
+std::string alert::getStringSubkey() {
+	std::string info;
+	info = this->IntToString(this->k.subkey);
+	return info;
+}
+
+std::string alert::getTime() {
+ std::string info;
+ info = this->IntToString(this->node.curTime.day) + '.' + this->IntToString(this->node.curTime.month) + '.' +
+     this->IntToString(this->node.curTime.year) + ' ' + this->IntToString(this->node.curTime.hour) + ':' +
+     this->IntToString(this->node.curTime.minute) + ':' + this->IntToString(this->node.curTime.second);
+ return info;
 }
 
 std::string alert::IntToString(int value) {
@@ -103,6 +117,56 @@ std::string alert::serialize(char n) {
 	return buf;
 }
 
+int alert::initFromString(std::string info) { 
+	if (info.empty()) 
+		return -1; 
+	std::string buf; 
+	std::stringstream ff; 
+	char sym; 
+	int mode; 
+	ff << info; 
+	getline(ff, buf, ';'); 
+	sym = buf[0]; 
+	mode = (int)sym; 
+	getline(ff, buf, ';'); 
+	this->k.origin = buf.c_str(); 
+	getline(ff, buf, ';'); 
+	this->k.type = buf.c_str(); 
+	getline(ff, buf, ';'); 
+	this->k.subkey = atoi(buf.c_str()); //РјРѕР¶РЅРѕ РЅРµСЏРІРЅРѕ 
+	getline(ff, buf, ';'); 
+	this->findPriority(buf); 
+	getline(ff, buf, ';'); 
+	this->findSeverity(buf); 
+	getline(ff, buf, ';'); 
+	this->node.state = buf.c_str(); 
+	getline(ff, buf, ';'); 
+	this->node.limTime.lday = atoi(buf.c_str()); 
+	getline(ff, buf, ';'); 
+	this->node.limTime.lhour = atoi(buf.c_str()); 
+	getline(ff, buf, ';'); 
+	this->node.limTime.lminute = atoi(buf.c_str()); 
+	getline(ff, buf, ';'); 
+	this->node.limTime.lsecond = atoi(buf.c_str()); 
+	getline(ff, buf, ';'); 
+	this->node.message = buf.c_str(); 
+	getline(ff, buf, ';'); 
+	this->node.curTime.day = atoi(buf.c_str()); 
+	getline(ff, buf, ';'); 
+	this->node.curTime.month = atoi(buf.c_str()); 
+	getline(ff, buf, ';'); 
+	this->node.curTime.year = atoi(buf.c_str()); 
+	getline(ff, buf, ';'); 
+	this->node.curTime.hour = atoi(buf.c_str()); 
+	getline(ff, buf, ';'); 
+	this->node.curTime.minute = atoi(buf.c_str()); 
+	getline(ff, buf, ';'); 
+	this->node.curTime.second = atoi(buf.c_str()); 
+	getline(ff, buf, '*'); 
+	this->node.sysTime = buf.c_str(); 
+	return mode; 
+}
+
 
 std::fstream & operator << (std::fstream &file, alert & newAlert) {
 	file << newAlert.k.origin << ';';
@@ -134,7 +198,7 @@ std::fstream & operator >>(std::fstream &file, alert &newAlert) {
 	getline(ff, buf, ';');
 	newAlert.k.type = buf.c_str();
 	getline(ff, buf, ';');
-	newAlert.k.subkey = atoi(buf.c_str());   //можно неявно
+	newAlert.k.subkey = atoi(buf.c_str());  
 	getline(ff, buf, ';');
 	newAlert.findPriority(buf);
 	getline(ff, buf, ';');
@@ -240,3 +304,34 @@ long alert::getDuration() {
 				 this->node.limTime.lsecond;
 }
 
+std::string alert::getMessage() {
+	return this->node.message;
+}
+
+std::string alert::getPriority() {	
+	switch (this->node.pr) {
+		case HIGH:
+			return "HIGH";
+		case MEDIUM:
+			return "HIGH";
+		case LOW:
+			return "HIGH";
+		default:
+			return "";
+	}
+}
+
+std::string alert::getSeverity() {	
+	switch (this->node.pr) {
+		case CRITICAL:
+			return "CRITICAL";
+		case ERROR:
+			return "ERROR";
+		case WARNING:
+			return "WARNING";
+		case DEBUG:
+			return "DEBUG";
+		default:
+			return "";
+	}
+}

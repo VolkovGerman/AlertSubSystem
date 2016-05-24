@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <vector>
 
@@ -54,17 +56,26 @@ private:
 public:
 	alert();
 	std::string serialize(char n);
+	int initFromString(std::string info);
 	std::string IntToString(int value);
 	std::string GetLocalTime();
 	std::string AllTime();
+	std::string getTime();
 	friend std::fstream & operator >> (std::fstream &, alert &);
 	friend std::fstream & operator << (std::fstream &, alert &);
 	void findPriority(std::string EnumName);
 	void findSeverity(std::string EnumName);
 	std::string getOrigin();
+	std::string getStringSubkey();
 	std::string getType();
 	int getSubkey();	
 	std::string getSystime();
 	int operator==(alert &);
 	long getDuration();
+	
+	
+	// added "get/set" for email
+	std::string getMessage();
+	std::string getPriority();
+	std::string getSeverity();
 };

@@ -1,3 +1,6 @@
+#pragma once
+
+#include "alert.h" 
 #include <string>
 
 class email {
@@ -34,5 +37,5 @@ class email {
         int setMessage(std::string strMes);
         std::string getMessage();
          
-        int send();
+        int sendAlert(alert);
 };
