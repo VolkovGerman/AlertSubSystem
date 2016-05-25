@@ -55,6 +55,13 @@ private:
 	value node;
 public:
 	alert();
+	
+	
+	
+	
+	
+	
+	
 	std::string serialize(char n);
 	int initFromString(std::string info);
 	std::string IntToString(int value);

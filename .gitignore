@@ -1,4 +1,5 @@
 .vscode/
-*.out
+**/*.out
 _asserts/
-main
+**/*/main
+**/*/cl
