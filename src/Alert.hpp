@@ -39,7 +39,7 @@ struct Value {
 	time_t creation_time;
 	long periodicity_time;
 	std::string message;
-    std::string recipient_email;
+    std::vector<std::string> recipients_email;
 	State state;
 	Priority priority;
 	Severity severity;
@@ -52,13 +52,23 @@ class Alert {
         struct Value alert_value_;
     
     public:
-    
+        
+        // Constructors
         Alert(){};
         
         Alert(std::string origin, std::string type, int subkey) {
             alert_key_.origin = origin;
             alert_key_.type = type;
             alert_key_.subkey = subkey;
+        }
+        
+        Alert(std::string origin, std::string type) {
+            alert_key_.origin = origin;
+            alert_key_.type = type;
+        }
+        
+        Alert(std::string origin) {
+            alert_key_.origin = origin;
         }
         
         // Get / set methods
@@ -125,12 +135,12 @@ class Alert {
             return 0;
         }
         
-        std::string get_recipient_email() {
-            return alert_value_.recipient_email;
+        std::vector<std::string> get_recipients_email() {
+            return alert_value_.recipients_email;
         }
         
-        int set_recipient_email(std::string str) {
-            alert_value_.recipient_email = str;
+        int set_recipients_email(std::vector<std::string> vectEmails) {
+            alert_value_.recipients_email = vectEmails;
             return 0;
         }
         
@@ -149,7 +159,7 @@ class Alert {
         
         // Serialize / Deserialize
         
-        std::string serialize(){
+        std::string Serialize(){
             json j;
             
             j["origin"] = this->alert_key_.origin;
@@ -159,7 +169,7 @@ class Alert {
             return j.dump();    
         }
         
-        int deserialize(std::string str) {
+        int Deserialize(std::string str) {
             json j = json::parse(str);
             
             // special iterator member functions for objects
@@ -175,5 +185,9 @@ class Alert {
                 
             }
         }
+        
+        // Other
+        
+        // get time in good string
           
 };
