@@ -36,30 +36,40 @@ namespace AlertSubSystem{
         database.Put(reqAlert.Serialize());
         
         // Send message to daemon, which contains alert key and operation number (0) 
-        /*
         json j, j_alert;
         j["operation"] = "new_alert";
         j["alert_key"]["origin"] = origin;
         j["alert_key"]["type"] = type;
         j["alert_key"]["subkey"] = subkey;
         SendToDaemon(j.dump());
-        */
+        
         return 0;
     }
     
-    Alert GetAlert(std::string origin, std::string type, int subkey) {
+    std::string GetAlert(std::string origin, std::string type, int subkey) {
         Alert reqAlert(origin, type, subkey);
         Alert resAlert;
+        DB database;
+        
+        // Put alert to bd
+        json j;
+        j["origin"] = origin;
+        j["type"] = type;
+        j["subkey"] = subkey;
+        std::string str11 = database.Get(j.dump());
         
         // Send message to daemon: operation number, alert key
+        /*
         json j;
         j["operation"] = "get_alert";
         j["alert_key"]["origin"] = origin;
         j["alert_key"]["type"] = type;
         j["alert_key"]["subkey"] = subkey;
         SendToDaemon(j.dump());
+        */
         
-        return resAlert;
+        //resAlert.Deserialize(str11);
+        return str11;
     }
     
     std::vector<Alert> GetAlerts(std::string origin, std::string type) {

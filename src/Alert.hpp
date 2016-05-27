@@ -3,6 +3,7 @@
 #include <iostream>
 #include <ctime>
 #include <string>
+#include <sstream>
 
 #include "json.hpp"
 
@@ -94,6 +95,15 @@ class Alert {
             return alert_key_.subkey;
         }
         
+        std::string get_subkey_string() {
+            int a = 10;
+            std::stringstream ss;
+            ss << a;
+            std::string str = ss.str();
+            
+            return str;
+        }
+        
         int set_subkey(int num){
             alert_key_.subkey = num;
             return 0;
@@ -155,6 +165,26 @@ class Alert {
         
         time_t get_creation_time(){
             return alert_value_.creation_time;
+        }
+        
+        std::string get_creation_time_pretty() {   
+            time_t now = time(0);
+            tm *ltm = localtime(&now);
+            std::stringstream date;
+            date << ltm->tm_mday
+                << "/"
+                << 1 + ltm->tm_mon
+                << "/"
+                << 1900 + ltm->tm_year
+                << " "
+                << 1 + ltm->tm_hour
+                << ":"
+                << 1 + ltm->tm_min
+                << ":"
+                << 1 + ltm->tm_sec;
+            std::cout << date.str() << "\n";
+            
+            return date.str();
         }
         
         // Serialize / Deserialize
