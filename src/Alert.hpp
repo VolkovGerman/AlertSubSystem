@@ -218,6 +218,44 @@ class Alert {
         
         // Other
         
+        // Make html table of data from alert, return string
+        std::string MakeHTMLTable(){
+            return 
+            "<table style='width: 100%; border-collapse: collapse;' border=1 cellpadding=5>"
+                "<caption align='center' style='padding-bottom: 20px'>"
+                    "AlertSubSystem Notification"
+                "</caption>"
+                "<tr>"
+                    "<td style='width:20%; text-align: right; font-weight: bold;'>Origin:</td>"
+                    "<td>" + this->get_origin() + "</td>"
+                "</tr>"
+                "<tr>"
+                    "<td style='width:20%; text-align: right; font-weight: bold;'>Type:</td>"
+                    "<td>" + this->get_type() + "</td>"
+                "</tr>"
+                "<tr>"
+                    "<td style='width:20%; text-align: right; font-weight: bold;'>Subkey:</td>"    
+                    "<td>" + this->get_subkey_string() + "</td>"
+                "</tr>" 
+                "<tr>"
+                    "<td style='width:20%; text-align: right; font-weight: bold;'>date_ and time_:</td>"
+                    "<td>" + this->get_creation_time_pretty() + "</td>"
+                "</tr>"
+                "<tr>"
+                    "<td style='width:20%; text-align: right; font-weight: bold;'>priority_:</td>"
+                    "<td></td>"
+                "</tr>"
+                "<tr>"
+                    "<td style='width:20%; text-align: right; font-weight: bold;'>severity_:</td>"
+                    "<td></td>"
+                "</tr>"
+                "<tr>"
+                    "<td style='width:20%; text-align: right; font-weight: bold;'>message_:</td>"
+                    "<td></td>"
+                "</tr>"
+            "</table>";
+        }
+        
         // get time in good string
           
 };

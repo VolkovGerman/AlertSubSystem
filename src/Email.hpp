@@ -114,52 +114,8 @@ class Email {
         std::string getmessage_(){
             return message_;
         };
-         
-        int sendAlert(Alert newAlert) { 
-            
-            std::string resultMail =
-                "To: <volkov.german.1997@mail.ru>\r\n"
-                "From: " + this->senderEmail_ + "\r\n"
-                "Content-Type: text/html; charset=\"us-ascii\"\r\n"
-                "Mime-version: 1.0\r\n"
-                "Subject: AS Notification\r\n"
-                "\r\n"
-                "<table style='width: 100%; border-collapse: collapse;' border=1 cellpadding=5>"
-                    "<caption align='center' style='padding-bottom: 20px'>"
-                        "AlertSubSystem Notification"
-                    "</caption>"
-                    "<tr>"
-                        "<td style='width:20%; text-align: right; font-weight: bold;'>Origin:</td>"
-                        "<td>" + newAlert.get_origin() + "</td>"
-                    "</tr>"
-                    "<tr>"
-                        "<td style='width:20%; text-align: right; font-weight: bold;'>Type:</td>"
-                        "<td>" + newAlert.get_type() + "</td>"
-                    "</tr>"
-                    "<tr>"
-                        "<td style='width:20%; text-align: right; font-weight: bold;'>Subkey:</td>"    
-                        "<td>" + newAlert.get_subkey_string() + "</td>"
-                    "</tr>" 
-                    "<tr>"
-                        "<td style='width:20%; text-align: right; font-weight: bold;'>date_ and time_:</td>"
-                        "<td>" + newAlert.get_creation_time_pretty() + "</td>"
-                    "</tr>"
-                    "<tr>"
-                        "<td style='width:20%; text-align: right; font-weight: bold;'>priority_:</td>"
-                        "<td></td>"
-                    "</tr>"
-                    "<tr>"
-                        "<td style='width:20%; text-align: right; font-weight: bold;'>severity_:</td>"
-                        "<td></td>"
-                    "</tr>"
-                    "<tr>"
-                        "<td style='width:20%; text-align: right; font-weight: bold;'>message_:</td>"
-                        "<td></td>"
-                    "</tr>"
-                "</table>";
-                        
-            payload_text[0] = resultMail.c_str();
-            
+        
+        int SendEmail() {
             CURL *curl;
             CURLcode res = CURLE_OK;
             struct curl_slist *recipients = NULL;
@@ -191,9 +147,9 @@ class Email {
                 res = curl_easy_perform(curl);
 
                 // Check for errors
-                if(res != CURLE_OK)
-                    fprintf(stderr, "curl_easy_perform() failed: %s\n",
-                            curl_easy_strerror(res));
+                if(res != CURLE_OK) {
+                    fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+                }
 
                 // Free the list of recipients 
                 curl_slist_free_all(recipients);
@@ -203,5 +159,38 @@ class Email {
             }
 
             return (int)res;
-        };
+        }
+        
+        std::string MakeEmailHeader() {
+            std::string email_header = 
+                "To: <volkov.german.1997@mail.ru>\r\n"
+                "From: " + this->senderEmail_ + "\r\n"
+                "Content-Type: text/html; charset=\"us-ascii\"\r\n"
+                "Mime-version: 1.0\r\n"
+                "Subject: AS Notification\r\n"
+                "\r\n";
+            return email_header;
+        }
+         
+        int SendAlert(Alert newAlert) { 
+            std::string resultMail = this->MakeEmailHeader() + newAlert.MakeHTMLTable();
+                        
+            payload_text[0] = resultMail.c_str();
+            
+            SendEmail();
+            return 0;
+        }
+        
+        int SendAlerts(std::vector<Alert> alerts) {
+            std::string resultMail = this->MakeEmailHeader();
+            
+            for (std::vector<Alert>::iterator it = alerts.begin() ; it != alerts.end(); ++it) {
+                resultMail += it->MakeHTMLTable();
+            }
+            
+            payload_text[0] = resultMail.c_str();
+            
+            SendEmail();
+            return 0;
+        }
 };
