@@ -73,6 +73,11 @@ void * alertQueue_processing(void *message) {
             alertsToSend.push_back(alertFromQueue);
         }        
         
+        std::cout << alertsToSend.size() << std::endl;
+        for (int i = 0; i < alertsToSend.size(); i++){
+            std::cout << alertsToSend[i].Serialize() << std::endl;
+        }
+        
         Email mail;
         mail.setRecipient("volkov.german.1997@gmail.com");
         mail.SendAlerts(alertsToSend);
@@ -88,7 +93,7 @@ int main() {
     pthread_t th1, th2;
     
     pthread_create(&th1, NULL, messagesQueue_processing, (void *)message);
-    pthread_create(&th1, NULL, alertQueue_processing, (void *)message);
+    pthread_create(&th2, NULL, alertQueue_processing, (void *)message);
     
     std::cout << "Daemon started..." << std::endl;
     

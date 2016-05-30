@@ -9,7 +9,7 @@ int main(){
     
     //AlertSubSystem::PutAlert("./a.out", "math", 55);  
     
-    AlertSubSystem::PutAlert("./a.out", "math", 53);
+    AlertSubSystem::PutAlert("./B.out", "math", 53);
     //std::cout << str << std::endl;
     //AlertSubSystem::Alert newAl = AlertSubSystem::GetAlert("./a.out", "math", 53);
     
