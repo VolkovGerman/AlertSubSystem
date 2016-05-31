@@ -1,9 +1,7 @@
+#pragma once
 #include "json.hpp"
-#include <iostream>
-#include <vector>
-#include <cstring>
-#include <sstream>
 #include <fstream>
+#include <iostream>
 
 using json = nlohmann::json;
 
@@ -20,1002 +18,431 @@ enum Severity {
 	DEBUG
 };
 
-struct Defs {
-	long periodicity_time_;
-	std::string message_;
-	std::vector<std::string> recipients_email_;
-	Priority priority_;
-	Severity severity_;
-
-	//temporary function, for testing
-	int DefsInit(long time, std::string mes, std::vector<std::string> vec, Priority pr, Severity sev) {
-		this->periodicity_time_ = time;
-		this->message_ = mes;
-		this->recipients_email_ = vec;
-		this->priority_ = pr;
-		this->severity_ = sev;
-		return 0;
-	}	
-
-	json CreateJsonDefs() {
-		json j, jmail;
-		std::vector<std::string>::iterator it;
-		for (it = recipients_email_.begin(); it != recipients_email_.end(); ++it) {
-			jmail.push_back(*it);
-		}
-		if (this->periodicity_time_ < 0 || this->periodicity_time_ > 2000000) {
-			this->periodicity_time_ = -1;
-			j["periodicity_time"] = this->periodicity_time_;
-		} else {
-			j["periodicity_time"] = this->periodicity_time_;
-		}
-		if (this->message_.empty()) {
-			j["message"] = nullptr;
-		} else {
-			j["message"] = this->message_;
-		}
-		if (this->recipients_email_.empty()) {
-			j["recipients_email"] = nullptr;
-		} else {
-			j["recipients_email"] = jmail;
-		}
-		if (this->priority_ < 0 || this->priority_ > 2) {			
-			j["priority"] = -1;
-		}else {
-			j["priority"] = this->priority_;
-		}
-		if (this->priority_ < 0 || this->priority_ > 3) {
-			j["severity"] = -1;
-		} else {
-			j["severity"] = this->severity_;
-		}		
-		return j;
+class Config {
+private:
+	json data_;
+	std::string data_file_ = "config.json";
+public:
+	Config() {
+		std::string buf;
+		buf = this->GetContents();
+		this->data_ = json::parse(buf);
 	}
 
-	std::string GetStrPrior(int num) {
-		if (num == 0) {
+	Priority CheckPriority(std::string priority) {
+		if (priority == "\"HIGH\"") {
+			return HIGH;
+		} 
+		if (priority == "\"MEDIUM\"") {
+			return MEDIUM;
+		} 
+		if (priority == "\"LOW\"") {
+			return LOW;
+		}
+
+	}
+
+	std::string PriorityToStr(Priority pr) {
+		if (pr == HIGH) {
 			return "HIGH";
 		}
-		if (num == 1) {
+		if (pr == MEDIUM) {
 			return "MEDIUM";
 		}
-		if (num == 2) {
+		if (pr == LOW) {
 			return "LOW";
 		}
 	}
 
-	Priority GetPriority(int num) {
-		if (num == 0) {
-			return HIGH;
-		}
-		if (num == 1) {
-			return MEDIUM;
-		}
-		if (num == 2) {
-			return LOW;
-		}		
-	}
-	std::string GetStrSever(int num) {
-		if (num == 0) {
-			return "CRITICAL";
-		}
-		if (num == 1) {
-			return "ERROR";
-		}
-		if (num == 2) {
-			return "WARNING";
-		}
-		if (num == 3) {
-			return  "DEBUG";
-		}
-	}
-	Severity GetSeverity(int num) {
-		if (num == 0) {
+	Severity CheckSeverity(std::string severity) {
+		if (severity == "\"CRITICAL\"") {
 			return CRITICAL;
 		}
-		if (num == 1) {
+		if (severity == "\"ERROR\"") {
 			return ERROR;
 		}
-		if (num == 2) {
+		if (severity == "\"WARNING\"") {
 			return WARNING;
 		}
-		if (num == 3) {
-			return  DEBUG;
-		}		
-	}
-
-	int ParseJsonDefs(json d) {
-		json j = json::parse(d.dump());				
-		for (json::iterator it = j.begin(); it != j.end(); ++it) {
-			if (it.key() == "periodicity_time") {
-				this->periodicity_time_ = it.value();
-			} else if (it.key() == "message") {
-				json js = it.value();
-				if (!js.is_null()) {
-					std::string buf = js;
-					this->message_ = buf;
-				}
-			} else if (it.key() == "recipients_email") {
-				json js = it.value();
-				if (!js.is_null()) {
-					std::vector<std::string> buf = js;
-					this->recipients_email_ = buf;
-				}
-			} else if (it.key() == "priority") {
-				this->priority_ = this->GetPriority(it.value());
-			} else if (it.key() == "severity") {
-				this->severity_ = this->GetSeverity(it.value());
-			}
+		if (severity == "\"DEBUG\"") {
+			return DEBUG;
 		}
-		return 0;
-	}
-};
-//************************************************************ Struct SubKey *******************************************
-struct SubKey {
-	int subkey_;
-	Defs subkey_def_;
-
-	int SubKeyInit(int subkey) {
-		this->subkey_ = subkey;
-		return 0;
 	}
 
-	json CreateJsonSubKey() {
-		json j, jsubkey;
-		jsubkey = subkey_def_.CreateJsonDefs();
-		if (this->subkey_ < 0) {
-			j["subkey"] = -1;
-		} else {
-			j["subkey"] = this->subkey_;
+	std::string SeverityToStr(Severity sev) {
+		if (sev == CRITICAL) {
+			return "CRITICAL";
 		}
-		j["subkey_def"] = jsubkey;
-
-		return j;
-	}
-
-	int ParseJsonSubkey(json d) {
-		json j = json::parse(d.dump());	
-		for (json::iterator it = j.begin(); it != j.end(); ++it) {
-			if (it.key() == "subkey") {
-				this->subkey_ = it.value();
-			} else if (it.key() == "subkey_def") {
-				json js = it.value();
-				Defs buf;
-				buf.ParseJsonDefs(js);
-				this->subkey_def_ = buf;
-			}
+		if (sev == ERROR) {
+			return "ERROR";
 		}
-		return 0;
-	}
-};
-//************************************************************ Struct Type *******************************************
-struct Type {
-	std::string type_;
-	Defs type_def_;
-	std::vector<SubKey> subkeys_;	
-
-	int TypeInit(std::string type, int subkey) {
-		this->type_ = type;
-		SubKey buf;
-		buf.SubKeyInit(subkey);
-		this->subkeys_.push_back(buf);
-		return 0;
-	}
-
-	int CompareSubKey(int subkey) {
-		std::vector<SubKey>::iterator it;
-		int z = 0;
-		for (it = this->subkeys_.begin(); it != this->subkeys_.end(); ++it) {
-			if ((*it).subkey_ == subkey) {
-				return z;
-			}
-			z++;
+		if (sev == WARNING) {
+			return "WARNING";
 		}
-		return -1;
+		if (sev == DEBUG) {
+			return "DEBUG";
+		}
 	}
 
-	json CreateJsonType() {
-		std::vector<SubKey>::iterator it;
-		json j, jtype, jsvec;		
-		jtype = type_def_.CreateJsonDefs();
-		if (this->type_.empty()) {
-			j["type"] = nullptr;
-		} else {
-			j["type"] = this->type_;
+	std::string GetMessage(std::string origin, std::string type, std::string subkey) {
+		json j = this->data_["definitions"]["origins"][origin]["types"][type]["subkeys"][subkey]["defs"]["message"];
+		if (j.is_null()) {
+			j = json::parse(this->GetMessage(origin, type));
 		}
-		j["type_def"] = jtype;
-		if (this->subkeys_.empty()) {
-			j["subkeys"] = nullptr;
-		} else {
-			for (it = subkeys_.begin(); it != subkeys_.end(); ++it) {
-				json buf = (*it).CreateJsonSubKey();
-				jsvec.push_back(buf);
-			}
-			j["subkeys"] = jsvec;
-		}
-		return j;
+		return j.dump();
 	}
 
-	int ParseJsonType(json d) {
-		json j = json::parse(d.dump());
-		Defs buf;		
-		for (json::iterator it = j.begin(); it != j.end(); ++it) {
-			if (it.key() == "type") {
-				json js = it.value();
-				if (!js.is_null()) {
-					std::string buf = js;
-					this->type_ = buf;
-				}
-			} else if (it.key() == "type_def") {
-				json js = it.value();
-				buf.ParseJsonDefs(js);
-				this->type_def_ = buf;
-			} else if (it.key() == "subkeys") {
-				json jm = it.value();
-				if (!jm.is_null()) {
-					json::array_t jn = jm;
-					for (json::array_t::iterator im = jn.begin(); im != jn.end(); ++im) {
-						SubKey sub;
-						sub.ParseJsonSubkey(*im);
-						this->subkeys_.push_back(sub);
-					}
-				}
-			}
+	std::string GetMessage(std::string origin, std::string type) {
+		json j = this->data_["definitions"]["origins"][origin]["types"][type]["defs"]["message"];
+		if (j.is_null()) {
+			j = json::parse(this->GetMessage(origin));
 		}
-		return 0;
-	}
-};
-//************************************************************ Struct Origin *******************************************
-struct Origin {
-	std::string origin_;
-	Defs origin_def_;
-	std::vector<Type> types_;
-
-	int OriginInit(std::string origin, std::string type, int subkey) {
-		this->origin_ = origin;
-		Type buf;
-		buf.TypeInit(type, subkey);
-		this->types_.push_back(buf);
-		return 0;
-	}
-
-	int CompareType(std::string type) {
-		std::vector<Type>::iterator it;
-		int z = 0;
-		for (it = this->types_.begin(); it != this->types_.end(); ++it) {
-			if ((*it).type_ == type) {
-				return z;
-			}
-			z++;
-		}
-		return -1;
-	}
-
-	json CreateJsonOrigin() {
-		json j, jorigin, jsvec;		
-		std::vector<Type>::iterator it;
-		jorigin = origin_def_.CreateJsonDefs();
-
-		if (this->origin_.empty()) {
-			j["origin"] = nullptr;
-		} else {
-			j["origin"] = this->origin_;
-		}
-		j["origin_def"] = jorigin;
-		if (this->types_.empty()) {
-			j["types"] = nullptr;
-		} else {
-			for (it = types_.begin(); it != types_.end(); ++it) {
-				json buf = (*it).CreateJsonType();
-				jsvec.push_back(buf);
-			}
-			j["types"] = jsvec;
-		}
-		return j;
-	}
-
-	int ParseJsonOrigin(json d) {
-		json j = json::parse(d.dump());
-		Defs buf;
-		
-		for (json::iterator it = j.begin(); it != j.end(); ++it) {
-			if (it.key() == "origin") {
-				json js = it.value();
-				if (!js.is_null()) {
-					std::string buf = js;
-					this->origin_ = buf;
-				}
-			} else if (it.key() == "origin_def") {
-				json js = it.value();
-				buf.ParseJsonDefs(js);
-				this->origin_def_ = buf;
-			} else if (it.key() == "types") {
-				json jm = it.value();
-				if (!jm.is_null()) {
-					json::array_t jn = jm;
-					for (json::array_t::iterator im = jn.begin(); im != jn.end(); ++im) {
-						Type sub;
-						sub.ParseJsonType(*im);
-						this->types_.push_back(sub);
-					}
-				}
-			}
-		}
-		return 0;
-	}
-
-
-};
-//************************************************************ Config Data *******************************************
-struct ConfigData {
-	int max_alerts_;
-	Defs global_def_;
-	std::vector<Origin> origins_;
-
-	std::string GetMessage() {
-		return this->global_def_.message_;
+		return j.dump();
 	}
 
 	std::string GetMessage(std::string origin) {
-		int origin_index = this->CompareOrigin(origin);	
-		if (origin_index >= 0) {
-			if (!this->origins_[origin_index].origin_def_.message_.empty()) {
-				return this->origins_[origin_index].origin_def_.message_;
-			} else {
-				return this->GetMessage();
-			}
+		json j = this->data_["definitions"]["origins"][origin]["defs"]["message"];
+		if (j.is_null()) {
+			j = json::parse(this->GetMessage());
 		}
-		return this->GetMessage();
-	}
-	
-	std::string GetMessage(std::string origin, std::string type) {
-		int origin_index = this->CompareOrigin(origin);		
-		if (origin_index >= 0) {
-			int type_index = this->origins_[origin_index].CompareType(type);
-			if (type_index >= 0) {
-				if (!this->origins_[origin_index].types_[type_index].type_def_.message_.empty()) {
-					return this->origins_[origin_index].types_[type_index].type_def_.message_;
-				} else {
-					if (!this->origins_[origin_index].origin_def_.message_.empty()) {					  
-						return this->origins_[origin_index].origin_def_.message_;
-					} else {
-						return this->GetMessage();
-					}
-				}				
-			}
-			return this->GetMessage();
-		}
+		return j.dump();
 	}
 
-	std::string GetMessage(std::string origin, std::string type, int subkey) {
-		int origin_index = this->CompareOrigin(origin);	
-		if (origin_index >= 0) {
-			int type_index = this->origins_[origin_index].CompareType(type);
-			if (type_index >= 0) {
-				int subkey_index = this->origins_[origin_index].types_[type_index].CompareSubKey(subkey);
-				if (subkey_index >= 0) {
-					if (!this->origins_[origin_index].types_[type_index].
-						subkeys_[subkey_index].subkey_def_.message_.empty()) {
-						return this->origins_[origin_index].types_[type_index].
-							subkeys_[subkey_index].subkey_def_.message_;
-					} else {
-						if (!this->origins_[origin_index].types_[type_index].type_def_.message_.empty()) {
-							return this->origins_[origin_index].types_[type_index].type_def_.message_;
-						} else {
-							if (!this->origins_[origin_index].origin_def_.message_.empty()) {
-								return this->origins_[origin_index].origin_def_.message_;
-							} else {
-								return this->GetMessage();
-							}
-						}
-					}								
-				}
-			}
-		}
-		return this->GetMessage();
+	std::string GetMessage() {
+		json j = this->data_["definitions"]["defs"]["message"];
+		std::string buf = j.dump();
+		return buf;
 	}
 
-	long GetPeriodicity() {
-		return this->global_def_.periodicity_time_;
+	int SetMessage(std::string origin, std::string type, std::string subkey, std::string message) {
+		this->data_["definitions"]["origins"][origin]["types"][type]["subkeys"][subkey]["defs"]["message"] = message;
+		this->WriteToDB(this->data_.dump());
+		return 0;
 	}
 
-	long GetPeriodicity(std::string origin) {
-		int origin_index = this->CompareOrigin(origin);		
-		if (origin_index >= 0) {
-			if (this->origins_[origin_index].origin_def_.periodicity_time_ >= 0) {
-				return this->origins_[origin_index].origin_def_.periodicity_time_;
-			} else {
-				return this->GetPeriodicity();
-			}
-		}
-		return this->GetPeriodicity();
+	int SetMessage(std::string origin, std::string type, std::string message) {
+		this->data_["definitions"]["origins"][origin]["types"][type]["defs"]["message"] = message;		
+		this->WriteToDB(this->data_.dump());
+		return 0;
 	}
 
-	long GetPeriodicity(std::string origin, std::string type) {
-		int origin_index = this->CompareOrigin(origin);		
-		if (origin_index >= 0) {
-			int type_index = this->origins_[origin_index].CompareType(type);
-			if (type_index >= 0) {
-				if (this->origins_[origin_index].types_[type_index].type_def_.periodicity_time_ >= 0) {
-					return this->origins_[origin_index].types_[type_index].type_def_.periodicity_time_;
-				} else {
-					if (this->origins_[origin_index].origin_def_.periodicity_time_ >= 0) {
-						return this->origins_[origin_index].origin_def_.periodicity_time_;
-					} else {
-						return this->GetPeriodicity();
-					}
-				}
-			}
-			return this->GetPeriodicity();
-		}
+	int SetMessage(std::string origin, std::string message) {
+		this->data_["definitions"]["origins"][origin]["defs"]["message"] = message;
+		this->WriteToDB(this->data_.dump());
+		return 0;
 	}
 
-	long GetPeriodicity(std::string origin, std::string type, int subkey) {
-		int origin_index = this->CompareOrigin(origin);		
-		if (origin_index >= 0) {
-			int type_index = this->origins_[origin_index].CompareType(type);
-			if (type_index >= 0) {
-				int subkey_index = this->origins_[origin_index].types_[type_index].CompareSubKey(subkey);
-				if (subkey_index >= 0) {
-					if (this->origins_[origin_index].types_[type_index].
-						subkeys_[subkey_index].subkey_def_.periodicity_time_ >= 0) {
-						return this->origins_[origin_index].types_[type_index].
-							subkeys_[subkey_index].subkey_def_.periodicity_time_;
-					} else {
-						if (this->origins_[origin_index].types_[type_index].type_def_.periodicity_time_ >= 0) {
-							return this->origins_[origin_index].types_[type_index].type_def_.periodicity_time_;
-						} else {
-							if (this->origins_[origin_index].origin_def_.periodicity_time_ >= 0) {
-								return this->origins_[origin_index].origin_def_.periodicity_time_;
-							} else {
-								return this->GetPeriodicity();
-							}
-						}
-					}
-				}
-			}
-		}
-		return this->GetPeriodicity();
+	int SetMessage(std::string message) {
+		this->data_["definitions"]["defs"]["message"] = message;
+		this->WriteToDB(this->data_.dump());
+		return 0;
 	}
 
-	Priority GetPriority() {
-		Defs buf;		
-		return buf.GetPriority(this->global_def_.priority_);
-	}
-	
-	Priority GetPriority(std::string origin) {
-		int origin_index = this->CompareOrigin(origin);
-		Defs buf;
-		if (origin_index >= 0) {
-			if (this->origins_[origin_index].origin_def_.priority_ >= 0) {
-				return buf.GetPriority(this->origins_[origin_index].origin_def_.priority_);
-			} else {
-				return this->GetPriority();
-			}
-		}
-		return this->GetPriority();
-	}
-	
-	Priority GetPriority(std::string origin, std::string type) {
-		int origin_index = this->CompareOrigin(origin);
-		Defs buf;
-		if (origin_index >= 0) {
-			int type_index = this->origins_[origin_index].CompareType(type);
-			if (type_index >= 0) {
-				if (this->origins_[origin_index].types_[type_index].type_def_.priority_ >= 0) {
-					return buf.GetPriority(this->origins_[origin_index].types_[type_index].type_def_.priority_);
-				} else {
-					if (this->origins_[origin_index].origin_def_.priority_ >= 0) {
-						return buf.GetPriority(this->origins_[origin_index].origin_def_.priority_);
-					} else {
-						return this->GetPriority();
-					}
-				}
-			}
-			return this->GetPriority();
-		}
-	}
-
-	Priority GetPriority(std::string origin, std::string type, int subkey) {
-		int origin_index = this->CompareOrigin(origin);
-		Defs buf;
-		if (origin_index >= 0) {
-			int type_index = this->origins_[origin_index].CompareType(type);
-			if (type_index >= 0) {
-				int subkey_index = this->origins_[origin_index].types_[type_index].CompareSubKey(subkey);
-				if (subkey_index >= 0) {
-					if (this->origins_[origin_index].types_[type_index].
-						subkeys_[subkey_index].subkey_def_.priority_ >= 0) {
-						return buf.GetPriority(this->origins_[origin_index].types_[type_index].
-							subkeys_[subkey_index].subkey_def_.priority_);
-					} else {
-						if (this->origins_[origin_index].types_[type_index].type_def_.priority_ >= 0) {
-							return buf.GetPriority(this->origins_[origin_index].types_[type_index].type_def_.priority_);
-						} else {
-							if (this->origins_[origin_index].origin_def_.priority_ >= 0) {
-								return buf.GetPriority(this->origins_[origin_index].origin_def_.priority_);
-							} else {
-								return this->GetPriority();
-							}
-						}
-					}
-				}
-			}
-		}
-		return this->GetPriority();
-	}
-
-	Severity GetSeverity() {
-		Defs buf;
-		return buf.GetSeverity(this->global_def_.severity_);
-	}
-
-	Severity GetSeverity(std::string origin) {
-		int origin_index = this->CompareOrigin(origin);
-		Defs buf;
-		if (origin_index >= 0) {
-			if (this->origins_[origin_index].origin_def_.severity_ >= 0) {
-				return buf.GetSeverity(this->origins_[origin_index].origin_def_.severity_);
-			} else {
-				return this->GetSeverity();
-			}
-		}
-		return this->GetSeverity();
-	}
-
-	Severity GetSeverity(std::string origin, std::string type) {
-		int origin_index = this->CompareOrigin(origin);
-		Defs buf;
-		if (origin_index >= 0) {
-			int type_index = this->origins_[origin_index].CompareType(type);
-			if (type_index >= 0) {
-				if (this->origins_[origin_index].types_[type_index].type_def_.severity_ >= 0) {
-					return buf.GetSeverity(this->origins_[origin_index].types_[type_index].type_def_.severity_);
-				} else {
-					if (this->origins_[origin_index].origin_def_.severity_ >= 0) {
-						return buf.GetSeverity(this->origins_[origin_index].origin_def_.severity_);
-					} else {
-						return this->GetSeverity();
-					}
-				}
-			}
-			return this->GetSeverity();
-		}
-	}
-
-	Severity GetSeverity(std::string origin, std::string type, int subkey) {
-		int origin_index = this->CompareOrigin(origin);
-		Defs buf;
-		if (origin_index >= 0) {
-			int type_index = this->origins_[origin_index].CompareType(type);
-			if (type_index >= 0) {
-				int subkey_index = this->origins_[origin_index].types_[type_index].CompareSubKey(subkey);
-				if (subkey_index >= 0) {
-					if (this->origins_[origin_index].types_[type_index].
-						subkeys_[subkey_index].subkey_def_.severity_ >= 0) {
-						return buf.GetSeverity(this->origins_[origin_index].types_[type_index].
-							subkeys_[subkey_index].subkey_def_.severity_);
-					} else {
-						if (this->origins_[origin_index].types_[type_index].type_def_.severity_ >= 0) {
-							return buf.GetSeverity(this->origins_[origin_index].types_[type_index].type_def_.severity_);
-						} else {
-							if (this->origins_[origin_index].origin_def_.severity_ >= 0) {
-								return buf.GetSeverity(this->origins_[origin_index].origin_def_.severity_);
-							} else {
-								return this->GetSeverity();
-							}
-						}
-					}
-				}
-			}
-		}
-		return this->GetSeverity();
-	}
-	
-	std::vector<std::string> GetRecipientsEmail() {
-		return this->global_def_.recipients_email_;
-	}
-
-	std::vector<std::string> GetRecipientsEmail(std::string origin) {
-		int origin_index = this->CompareOrigin(origin);
-		if (origin_index >= 0) {
-			if (!this->origins_[origin_index].origin_def_.recipients_email_.empty()) {
-				return this->origins_[origin_index].origin_def_.recipients_email_;
-			} else {
-				return this->GetRecipientsEmail();
-			}
-		}
-		return this->GetRecipientsEmail();
-	}
-
-	std::vector<std::string> GetRecipientsEmail(std::string origin, std::string type) {
-		int origin_index = this->CompareOrigin(origin);
-		if (origin_index >= 0) {
-			int type_index = this->origins_[origin_index].CompareType(type);
-			if (type_index >= 0) {
-				if (!this->origins_[origin_index].types_[type_index].type_def_.recipients_email_.empty()) {
-					return this->origins_[origin_index].types_[type_index].type_def_.recipients_email_;
-				} else {
-					if (!this->origins_[origin_index].origin_def_.recipients_email_.empty()) {
-						return this->origins_[origin_index].origin_def_.recipients_email_;
-					} else {
-						return this->GetRecipientsEmail();
-					}
-				}
-			}
-			return this->GetRecipientsEmail();
-		}
-	}
-
-	std::vector<std::string> GetRecipientsEmail(std::string origin, std::string type, int subkey) {
-		int origin_index = this->CompareOrigin(origin);
-		if (origin_index >= 0) {
-			int type_index = this->origins_[origin_index].CompareType(type);
-			if (type_index >= 0) {
-				int subkey_index = this->origins_[origin_index].types_[type_index].CompareSubKey(subkey);
-				if (subkey_index >= 0) {
-					if (!this->origins_[origin_index].types_[type_index].
-						subkeys_[subkey_index].subkey_def_.recipients_email_.empty()) {
-						return this->origins_[origin_index].types_[type_index].
-							subkeys_[subkey_index].subkey_def_.recipients_email_;
-					} else {
-						if (!this->origins_[origin_index].types_[type_index].type_def_.recipients_email_.empty()) {
-							return this->origins_[origin_index].types_[type_index].type_def_.recipients_email_;
-						} else {
-							if (!this->origins_[origin_index].origin_def_.recipients_email_.empty()) {
-								return this->origins_[origin_index].origin_def_.recipients_email_;
-							} else {
-								return this->GetRecipientsEmail();
-							}
-						}
-					}
-				}
-			}
-		}
-		return this->GetRecipientsEmail();
-	}
-
-	int CompareOrigin(std::string origin) {
-		std::vector<Origin>::iterator it;
-		int z = 0;
-		for (it = this->origins_.begin(); it != this->origins_.end(); ++it) {
-			if ((*it).origin_ == origin) {
-				return z;
-			}
-			z++;
-		}
-		return -1;
-	}
-
-	json CreateJsonConfigD() {
-		json j, jconfdata, jsvec;
-		Defs global_def;
-		std::vector<Origin>::iterator it;
-		jconfdata = global_def_.CreateJsonDefs();
-		if (this->max_alerts_ < 0) {
-			j["max_alert"] = -1;
-		} else {
-			j["max_alert"] = this->max_alerts_;
-		}
-		j["global_def"] = jconfdata;
-		if (this->origins_.empty()) {
-			j["origins"] = nullptr;
-		} else {
-			for (it = origins_.begin(); it != origins_.end(); ++it) {
-				json buf = (*it).CreateJsonOrigin();
-				jsvec.push_back(buf);
-			}
-			j["origins"] = jsvec;
+	long GetPeriodisityTime(std::string origin, std::string type, std::string subkey) {
+		json j = this->data_["definitions"]["origins"][origin]["types"][type]["subkeys"][subkey]["defs"]["periodicity_time"];		
+		if (j.is_null()) {
+			j = this->GetPeriodisityTime(origin, type);
 		}
 		return j;
 	}
 
-	int ParseJsonConfigD(json d) {
-		json j = json::parse(d.dump());
-		Defs buf;		
-		for (json::iterator it = j.begin(); it != j.end(); ++it) {
-			if (it.key() == "max_alert") {
-				this->max_alerts_ = it.value();
-			} else if (it.key() == "global_def") {
-				json js = it.value();
-				buf.ParseJsonDefs(js);
-				this->global_def_ = buf;
-			} else if (it.key() == "origins") {
-				json jm = it.value();
-				if (!jm.is_null()) {
-					json::array_t jn = jm;
-					for (json::array_t::iterator im = jn.begin(); im != jn.end(); ++im) {
-						Origin sub;
-						sub.ParseJsonOrigin(*im);
-						this->origins_.push_back(sub);
-					}
-				}
-			}
+	long GetPeriodisityTime(std::string origin, std::string type) {
+		json j = this->data_["definitions"]["origins"][origin]["types"][type]["defs"]["periodicity_time"];
+		if (j.is_null()) {
+			j = this->GetPeriodisityTime(origin);
 		}
-		return 0;
+		return j;
 	}
-};
-//************************************************************ Class Config *******************************************
-class Config {
-private:
-	ConfigData data_;
-	std::string config_file_ = "config.json";
-public:
-	int Empty() {
-		if (this->data_.origins_.empty()) {
-			return 1;
+	
+	long GetPeriodisityTime(std::string origin) {
+		json j = this->data_["definitions"]["origins"][origin]["defs"]["periodicity_time"];
+		if (j.is_null()) {
+			j = this->GetPeriodisityTime();
 		}
+		return j;
+	}
+
+	long GetPeriodisityTime() {
+		json j = this->data_["definitions"]["defs"]["periodicity_time"];		
+		return j;
+	}
+
+	int SetPeriodisityTime(std::string origin, std::string type, std::string subkey, long time) {
+		this->data_["definitions"]["origins"][origin]["types"][type]["subkeys"][subkey]["defs"]["periodicity_time"] = time;
+		this->WriteToDB(this->data_.dump());
 		return 0;
 	}
 
-	int ReadConfig() {
-		std::fstream outfile;
-		outfile.open(this->config_file_.c_str(), std::ios::in);
-		if (!outfile.is_open()) {
-			outfile.close();
-			return 0;
+	int SetPeriodisityTime(std::string origin, std::string type) {
+		json j = this->data_["definitions"]["origins"][origin]["types"][type]["defs"]["periodicity_time"];
+		this->WriteToDB(this->data_.dump());
+		return 0;
+	}
+
+	int SetPeriodisityTime(std::string origin) {
+		json j = this->data_["definitions"]["origins"][origin]["defs"]["periodicity_time"];
+		this->WriteToDB(this->data_.dump());
+		return 0;
+	}
+
+	int SetPeriodisityTime() {
+		json j = this->data_["definitions"]["defs"]["periodicity_time"];
+		this->WriteToDB(this->data_.dump());
+		return 0;
+	}
+
+	std::string GetStrPriority(std::string origin, std::string type, std::string subkey) {
+		json j = this->data_["definitions"]["origins"][origin]["types"][type]["subkeys"][subkey]["defs"]["priority"];
+		if (j.is_null()) {
+			j = json::parse(this->GetStrPriority(origin, type));
 		}
-		std::string buf;
-		outfile >> buf;
+		return j.dump();
+	}
+
+	std::string GetStrPriority(std::string origin, std::string type) {
+		json j = this->data_["definitions"]["origins"][origin]["types"][type]["defs"]["priority"];
+		if (j.is_null()) {
+			j = json::parse(this->GetStrPriority(origin));
+		}
+		return j.dump();
+	}
+
+	std::string GetStrPriority(std::string origin) {
+		json j = this->data_["definitions"]["origins"][origin]["defs"]["priority"];
+		if (j.is_null()) {
+			j = json::parse(this->GetStrPriority());
+		}
+		return j.dump();
+	}
+
+	std::string GetStrPriority() {
+		json j = this->data_["definitions"]["defs"]["priority"];		
+		return j.dump();
+	}
+
+	Priority GetPriority(std::string origin, std::string type, std::string subkey) {
+		return this->CheckPriority(this->GetStrPriority(origin,type, subkey));
+	}
+
+	Priority GetPriority(std::string origin, std::string type) {
+		return this->CheckPriority(this->GetStrPriority(origin, type));
+	}
+
+	Priority GetPriority(std::string origin) {
+		return this->CheckPriority(this->GetStrPriority(origin));
+	}
+
+	Priority GetPriority() {
+		return this->CheckPriority(this->GetStrPriority());
+	}
+
+	int SetPriority(std::string origin, std::string type, std::string subkey, Priority pr) {
+		this->data_["definitions"]["origins"][origin]["types"][type]["subkeys"][subkey]["defs"]["priority"] = this->PriorityToStr(pr);
+		this->WriteToDB(this->data_.dump());
+		return 0;
+	}
+
+	int SetPriority(std::string origin, std::string type, Priority pr) {
+		this->data_["definitions"]["origins"][origin]["types"][type]["defs"]["priority"] = this->PriorityToStr(pr);
+		this->WriteToDB(this->data_.dump());
+		return 0;
+	}
+
+	int SetPriority(std::string origin, Priority pr) {
+		this->data_["definitions"]["origins"][origin]["defs"]["priority"] = this->PriorityToStr(pr);
+		this->WriteToDB(this->data_.dump());
+		return 0;
+	}
+
+	int SetPriority(Priority pr) {
+		this->data_["definitions"]["defs"]["priority"] = this->PriorityToStr(pr);
+		this->WriteToDB(this->data_.dump());
+		return 0;
+	}
+
+	std::string GetStrSeverity(std::string origin, std::string type, std::string subkey) {
+		json j = this->data_["definitions"]["origins"][origin]["types"][type]["subkeys"][subkey]["defs"]["severity"];
+		if (j.is_null()) {
+			j = json::parse(this->GetStrSeverity(origin, type));
+		}
+		return j.dump();
+	}
+
+	std::string GetStrSeverity(std::string origin, std::string type) {
+		json j = this->data_["definitions"]["origins"][origin]["types"][type]["defs"]["severity"];
+		if (j.is_null()) {
+			j = json::parse(this->GetStrSeverity(origin));
+		}
+		return j.dump();
+	}
+
+	std::string GetStrSeverity(std::string origin) {
+		json j = this->data_["definitions"]["origins"][origin]["defs"]["severity"];
+		if (j.is_null()) {
+			j = json::parse(this->GetStrSeverity());
+		}
+		return j.dump();
+	}
+
+	std::string GetStrSeverity() {
+		json j = this->data_["definitions"]["defs"]["severity"];
+		return j.dump();
+	}
+
+
+	Severity GetSeverity(std::string origin, std::string type, std::string subkey) {
+		return this->CheckSeverity(this->GetStrSeverity(origin, type, subkey));
+	}
+
+	Severity GetSeverity(std::string origin, std::string type) {
+		return this->CheckSeverity(this->GetStrSeverity(origin, type));
+	}
+
+	Severity GetSeverity(std::string origin) {
+		return this->CheckSeverity(this->GetStrSeverity(origin));
+	}
+
+	Severity GetSeverity() {
+		return this->CheckSeverity(this->GetStrSeverity());
+	}
+
+	int SetSeverity(std::string origin, std::string type, std::string subkey, Severity sev) {
+		this->data_["definitions"]["origins"][origin]["types"][type]["subkeys"][subkey]["defs"]["severity"] = this->SeverityToStr(sev);
+		this->WriteToDB(this->data_.dump());
+		return 0;
+	}
+
+	int SetSeverity(std::string origin, std::string type, Severity sev) {
+		this->data_["definitions"]["origins"][origin]["types"][type]["defs"]["severity"] = this->SeverityToStr(sev);
+		this->WriteToDB(this->data_.dump());
+		return 0;
+	}
+
+	int SetSeverity(std::string origin, Severity sev) {
+		this->data_["definitions"]["origins"][origin]["defs"]["severity"] = this->SeverityToStr(sev);
+		this->WriteToDB(this->data_.dump());
+		return 0;
+	}
+
+	int SetSeverity(Severity sev) {
+		this->data_["definitions"]["defs"]["severity"] = this->SeverityToStr(sev);
+		this->WriteToDB(this->data_.dump());
+		return 0;
+	}
+
+	std::vector<std::string> GetRecipientsEmail(std::string origin, std::string type, std::string subkey) {
+		json j = this->data_["definitions"]["origins"][origin]["types"][type]["subkeys"][subkey]["defs"]["recipients_email"];		
+		if (j.is_null()) {
+			std::vector<std::string> buf = this->GetRecipientsEmail(origin, type);
+			return buf;
+		}
+		std::vector<std::string> vec = j;
+		return vec;
+	}
+
+	std::vector<std::string> GetRecipientsEmail(std::string origin, std::string type) {
+		json j = this->data_["definitions"]["origins"][origin]["types"][type]["defs"]["recipients_email"];		
+		if (j.is_null()) {
+			std::vector<std::string> buf = this->GetRecipientsEmail(origin);
+			return buf;
+		}
+		std::vector<std::string> vec = j;
+		return vec;
+	}
+
+	std::vector<std::string> GetRecipientsEmail(std::string origin) {
+		json j = this->data_["definitions"]["origins"][origin]["defs"]["recipients_email"];			
+		if (j.is_null()) {
+			std::vector<std::string> buf = this->GetRecipientsEmail();
+			return buf;
+		} 	
+		std::vector<std::string> vec = j;
+		return vec;
+	}
+
+	std::vector<std::string> GetRecipientsEmail() {
+		json j = this->data_["definitions"]["defs"]["recipients_email"];		
+		std::vector<std::string> vec = j;			
+		return vec;
+	}	
+
+	int SetRecipientsEmail(std::string origin, std::string type, std::string subkey,std::vector<std::string> vec) {
+		for (std::vector<std::string>::iterator it = vec.begin(); it != vec.end(); ++it) {
+			this->data_["definitions"]["origins"][origin]["types"][type]["subkeys"][subkey]["defs"]["recipients_email"].push_back(*it);
+		}
+		this->WriteToDB(this->data_.dump());
+		return 0;
+	}
+
+	int SetRecipientsEmail(std::string origin, std::string type, std::vector<std::string> vec) {
+		for (std::vector<std::string>::iterator it = vec.begin(); it != vec.end(); ++it) {
+			this->data_["definitions"]["origins"][origin]["types"][type]["defs"]["recipients_email"].push_back(*it);
+		}
+		this->WriteToDB(this->data_.dump());
+		return 0;
+	}
+
+	int SetRecipientsEmail(std::string origin, std::vector<std::string> vec) {
+		for (std::vector<std::string>::iterator it = vec.begin(); it != vec.end(); ++it) {
+			this->data_["definitions"]["origins"][origin]["defs"]["recipients_email"].push_back(*it);
+		}
+		this->WriteToDB(this->data_.dump());
+		return 0;
+	}
+
+	int SetRecipientsEmail(std::vector<std::string> vec) {
+		for (std::vector<std::string>::iterator it = vec.begin(); it != vec.end(); ++it) {
+			this->data_["definitions"]["defs"]["recipients_email"].push_back(*it);
+		}
+		this->WriteToDB(this->data_.dump());
+		return 0;
+	}
+	
+	std::string GetMode() {
+		json j = this->data_["mode"];		
+		return j.dump();
+	}
+
+	int SetMode(std::string mode) {
+		this->data_["mode"] = mode;
+		this->WriteToDB(this->data_.dump());
+		return 0;
+	}
+
+	int GetMaxAlerts() {
+		json j = this->data_["max_alerts"];
+		return j;
+	}
+
+	int SetMaxAlerts(int max_alert) {
+		this->data_["max_alerts"] = max_alert;
+		this->WriteToDB(this->data_.dump());
+		return 0;
+	}
+
+	int AddDefinition() {
+		return 0;
+	}
+
+	std::string GetContents() {
+		std::ifstream outfile;
+		outfile.open(this->data_file_, std::ios::out | std::ios::app);
+
+		std::string str;
+		outfile >> str;		
 		outfile.close();
-		json jdata = json::parse(buf);
-		this->data_.ParseJsonConfigD(jdata);
-		return 1;
+
+		return str;
 	}
 
-	int WriteConfig() {
-		std::fstream outfile;
-		std::string buf;
-		outfile.open(this->config_file_.c_str(), std::ios::out);
-		if (!outfile.is_open()) {
-			outfile.close();
-			return 0;
-		}
-		buf = this->data_.CreateJsonConfigD().dump();
+	int WriteToDB(std::string content) {
+		std::ofstream outfile;
+		outfile.open(this->data_file_, std::ios::out | std::ios::trunc);
+
 		// write inputted data into the file.
-		outfile << buf;
+		outfile << content;
+
 		outfile.close();
-		return 1;
-	}
-	//temporary function for testing
-	int CompareType(int orig_index, std::string type) {
-		std::vector<Type>::iterator it;
-		int z = 0;
-		for (it = this->data_.origins_[orig_index].types_.begin(); it != this->data_.origins_[orig_index].types_.end(); ++it) {
-			if ((*it).type_ == type) {
-				return z;
-			}
-			z++;
-		}
-		return -1;
-	}
-	//temporary function for testing
-	int CompareSubKey(int orig_index, int type_index, int subkey) {
-		std::vector<SubKey>::iterator it;
-		int z = 0;
-		for (it = this->data_.origins_[orig_index].types_[type_index].subkeys_.begin(); it != this->data_.origins_[orig_index].types_[type_index].subkeys_.end(); ++it) {
-			if ((*it).subkey_ == subkey) {
-				return z;
-			}
-			z++;
-		}
-		return -1;
-	}
-	//temporary function for testing
-	int MakeNote() {
-		std::string origin, type;
-		int subkey;
-
-		std::cout << "Enter origin: ";
-		std::cin >> origin;
-		std::cout << std::endl;
-		std::cout << "Enter type: ";
-		std::cin >> type;
-		std::cout << std::endl;
-		std::cout << "Enter subkey: ";
-		std::cin >> subkey;
-		std::cout << std::endl;
-
-		if (this->CheckNote(origin, type, subkey)) {
-			this->WriteConfig();
-		}
-
 		return 0;
-	}
-
-	int CheckNote(std::string origin, std::string type, int subkey) {
-		int origin_index, type_index;
-
-		origin_index = this->data_.CompareOrigin(origin);
-		if (origin_index >= 0) {
-			type_index = this->CompareType(origin_index, type);
-			if (type_index >= 0) {
-				if (this->CompareSubKey(origin_index, type_index, subkey) >= 0) {
-					return 0;
-				} else {
-					SubKey buf_subkey;
-					buf_subkey.SubKeyInit(subkey);
-					this->data_.origins_[origin_index].types_[type_index].subkeys_.push_back(buf_subkey);
-					return 1;
-				}
-			} else {
-				Type buf_type;
-				buf_type.TypeInit(type, subkey);
-				this->data_.origins_[origin_index].types_.push_back(buf_type);
-				return 1;
-			}
-		} else {
-			Origin buf_origin;
-			buf_origin.OriginInit(origin, type, subkey);
-			this->data_.origins_.push_back(buf_origin);
-		}
-		return 1;
-	}
-	
-	int MakeTable() {
-		std::string origin = "originnnnnnnnnnnnnnnnnnnnnnnnnnnnn", type = "type",subkey = "subkey",num = "num.";
-		 
-		for (int i = 0; i < 80; i++) {
-			std::cout << '-';
-		}
-		//std::cout << "|" << std::setw(10) << num << "|" << std::setw(27) << origin << "|" << std::setw(27) << type << "|" << std::setw(11) << subkey << "|";
-		std::cout.width(10);
-		std::cout << origin;
-		for (int i = 0; i < 80; i++) {
-			std::cout << '-';
-		}
-		return 0;
-	}
-
-	int SetGlobal() {
-		this->data_.global_def_.message_ = "global_def";
-		this->data_.global_def_.periodicity_time_ = 228;
-		this->data_.global_def_.priority_ = HIGH;
-		this->data_.global_def_.severity_ = CRITICAL;
-		this->data_.global_def_.recipients_email_.push_back("global_email");
-		return 0;
-	}
-
-	//temporary function for testing
-	int EnterInf() {
-		std::string buf;
-		std::cout << "Enter global message: ";
-		std::cin >> buf;
-		this->data_.global_def_.message_ = buf;
-		return 0;
-	}
-
-	int EnterInf(std::string origin) {
-		int origin_index = this->data_.CompareOrigin(origin);
-		if (origin_index >= 0) {
-			std::string buf;
-			std::cout << "Enter origin message: ";
-			std::cin >> buf;
-			this->data_.origins_[origin_index].origin_def_.message_ = buf;
-			return 1;
-		}
-		std::cout << "this origin is not found" << std::endl;
-		return 0;
-	}
-
-	int EnterInf(std::string origin, std::string type) {
-		int origin_index = this->data_.CompareOrigin(origin);
-		if (origin_index >= 0) {
-			int type_index = this->data_.origins_[origin_index].CompareType(type);
-				if (type_index >= 0) {
-					std::string buf;
-					std::cout << "Enter type message: ";
-					std::cin >> buf;
-					this->data_.origins_[origin_index].types_[type_index].type_def_.message_ = buf;
-					return 1;
-				}				
-		}
-		std::cout << "this origin is not found" << std::endl;
-		return 0;	
-	}
-
-	int EnterInf(std::string origin,std::string type,int subkey) {
-		int origin_index = this->data_.CompareOrigin(origin);
-		if (origin_index >= 0) {
-			int type_index = this->data_.origins_[origin_index].CompareType(type);
-			if (type_index >= 0) {
-				int subkey_index = this->data_.origins_[origin_index].types_[type_index].CompareSubKey(subkey);
-				if (subkey_index >= 0) {
-					std::string buf;
-					std::cout << "Enter user message: ";
-					std::cin >> buf;
-					this->data_.origins_[origin_index].types_[type_index].subkeys_[subkey_index].subkey_def_.message_ = buf;
-					return 1;
-				}				
-			}
-		}
-		std::cout << "this origin is not found" << std::endl;
-		return 0;
-	}
-	
-	std::string GetMessage() {
-		std::string buf = this->data_.GetMessage();		
-		return buf;
-	}
-
-	std::string GetMessage(std::string origin) {
-		std::string buf = this->data_.GetMessage(origin);		
-		return buf;
-	}
-	std::string GetMessage(std::string origin, std::string type) {
-		std::string buf = this->data_.GetMessage(origin, type);	
-		return buf;
-	}
-	std::string GetMessage(std::string origin, std::string type, int subkey) {
-		std::string buf = this->data_.GetMessage(origin, type, subkey);	 
-		return buf;
-	}
-
-	long GetPeriodicity() {
-		long time = this->data_.GetPeriodicity();
-		return time;
-	}
-
-	long GetPeriodicity(std::string origin) {
-		long time = this->data_.GetPeriodicity(origin);
-		return time;
-	}
-
-	long GetPeriodicity(std::string origin, std::string type) {
-		long time = this->data_.GetPeriodicity(origin, type);
-		return time;
-	}
-
-	long GetPeriodicity(std::string origin, std::string type, int subkey) {
-		long time = this->data_.GetPeriodicity(origin, type, subkey);
-		return time;
-	}
-
-	Priority GetPriority() {
-		return this->data_.GetPriority();
-	}
-
-	Priority GetPriority(std::string origin) {
-		return this->data_.GetPriority(origin);
-	}
-
-	Priority GetPriority(std::string origin, std::string type) {
-		return this->data_.GetPriority(origin, type);
-	}
-
-	Priority GetPriority(std::string origin, std::string type, int subkey) {
-		return this->data_.GetPriority(origin, type, subkey);
-	}
-
-	Severity GetSeverity() {
-		return this->data_.GetSeverity();
-	}
-
-	Severity GetSeverity(std::string origin) {
-		return this->data_.GetSeverity(origin);
-	}
-
-	Severity GetSeverity(std::string origin, std::string type) {
-		return this->data_.GetSeverity(origin, type);
-	}
-
-	Severity GetSeverity(std::string origin, std::string type, int subkey) {
-		return this->data_.GetSeverity(origin, type, subkey);
-	}
-
-	std::vector<std::string> GetRecipientsEmail() {
-		return this->data_.GetRecipientsEmail();
-	}
-
-	std::vector<std::string> GetRecipientsEmail(std::string origin) {
-		return this->data_.GetRecipientsEmail(origin);
-	}
-
-	std::vector<std::string> GetRecipientsEmail(std::string origin, std::string type) {
-		return this->data_.GetRecipientsEmail(origin, type);
-	}
-
-	std::vector<std::string> GetRecipientsEmail(std::string origin, std::string type, int subkey) {
-		return this->data_.GetRecipientsEmail(origin, type, subkey);
 	}
 };
