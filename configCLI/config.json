@@ -1,1 +1,0 @@
-{"definitions":{"defs":{"message":"gl_mes","periodicity_time":123,"priority":"LOW","recipients_email":["bylnov.nick@yandex.ru"],"severity":"ERROR"},"origins":{"/a.out":{"types":{"math":{"defs":{"message":"12"}}}}}},"max_alerts":10,"mode":"im"}
