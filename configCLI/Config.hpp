@@ -366,7 +366,7 @@ public:
 		return vec;
 	}	
 
-	int SetRecipientsEmail(std::string origin, std::string type, std::string subkey,std::vector<std::string> vec) {
+	int SetRecipientsEmail(std::string origin, std::string type, std::string subkey, std::vector<std::string> vec) {
 		for (std::vector<std::string>::iterator it = vec.begin(); it != vec.end(); ++it) {
 			this->data_["definitions"]["origins"][origin]["types"][type]["subkeys"][subkey]["defs"]["recipients_email"].push_back(*it);
 		}
