@@ -2,28 +2,191 @@
 <html>
 <head>
 	<title>AlertSubsystem</title>
-
+	
+	<link rel="stylesheet" href="css/960.css">
 	<link rel="stylesheet" href="css/main.css">
+	
+	<link rel="stylesheet" href="css/default.css">
+	<link rel="stylesheet" href="css/arduino-light.css">
+	
+	
 </head>
 <body>
 
-	<header>
+	<header class="header">
 		<div class="container">
-			<h1>AlertSubSystem</h1>
+			<h1>AlertSubsystem</h1>
+			<p class="header__descr">C++ library for more convenient error handling</p>
+			<div class="download-links">
+				<a class="link" href="#">.tar.gz</a>
+				<a class="link" href="#">.zip</a>
+			</div>
 		</div>		 	
 	</header>
 
-	<main>
+	<main class="main">
 		<div class="container">
-			Main
+			<section>
+				<header class="section-header">
+					<h2>Description</h2>
+				</header>
+				<div class="full-description container_24">
+					<div class="grid_10 prefix_1 suffix_1">
+						Lorem ipsum dolor sit amet, consectetur adipisicing elit. Cupiditate aliquam, qui enim. Minima eum aut saepe sed, soluta dolores labore nobis repellat molestias atque, quam asperiores, placeat tempore voluptates distinctio?
+					</div>
+					<div class="grid_10 prefix_1 suffix_1">
+						 Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt laboriosam, esse quaerat voluptatum aut sequi mollitia quos saepe. Sunt quis assumenda, labore mollitia iste nam facilis et numquam fuga cumque!
+					</div>
+				</div>
+			</section>
+			
+			<section>
+				<header class="section-header">
+					<h2>Usage</h2>
+				</header>
+				<div class="usage-code container_24">
+					<div class="grid_22 prefix_1 suffix_1">
+						<pre><code class="cpp">#include &lt;iostream&gt;
+#include &lt;stdio.h&gt;
+#include "alertSubSystem.h"
+#include "alert.h"
+
+int main(){
+	int a, b;
+	double div;
+	char symb;
+	
+	do {
+		std::cout &lt;&lt; "Input a:" &lt;&lt; std::endl;
+		std::cin &gt;&gt; a;
+		
+		std::cout &lt;&lt; "Input b:" &lt;&lt; std::endl;
+		std::cin &gt;&gt; b;
+		
+		if (b == 0) {
+			// That's bad, send an email
+			AlertSubSystem::put_alert();
+		} else {
+			div = a / b;
+			std::cout &lt;&lt; "The result of the division is " &lt;&lt; div &lt;&lt; std::endl; 
+		}
+		
+		std::cout &lt;&lt; "Would you like to calculate again? (y/n)";
+		std::cin &gt;&gt; symb;
+	} while (symb == 'y');
+	
+	return 0;
+}</code></pre>
+						<div class="usage-comment">
+							You can control fields of the alert by editing <a href="#">config.json</a> file. You can do it manually or use <a href="#">asConfigCLI</a> to view, edit and delete alert definitions from command line. 
+						</div>
+					</div>
+					
+				</div>
+			</section>
+			
+			<section>
+				<header class="section-header">
+					<h2>Additional programs</h2>
+				</header>
+				<div class="container_24 list-additional-progs">
+					<div class="grid_22 suffix_1 prefix_1">
+						<div class="container_24">
+							<div class="grid_11">
+								<div class="prog">
+									<header class="prog-name">
+										asConfigCLI
+									</header>
+									<img class="prog-img" src="img/screen1.png" width alt="asConfigCLI">
+									<div class="prog-descr">
+										Command line interface for config viewing and editing.
+									</div>
+								</div>
+								<div class="prog">
+									<header class="prog-name">
+										asConfigWeb
+									</header>
+									<img class="prog-img" src="img/screen1.png" width alt="asConfigCLI">
+									<div class="prog-descr">
+										Web page for a fast config editing.
+									</div>
+								</div>
+							</div>
+							<div class="grid_11">
+								<div class="prog">
+									<header class="prog-name">
+										asDatabaseCLI
+									</header>
+									<img class="prog-img" src="img/screen1.png" width alt="asDatabaseCLI">
+									<div class="prog-descr">
+										Command line interface for viewing alerts from database.
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+			
+			<section>
+				<header class="section-header">
+					<h2>Developers</h2>
+				</header>
+				<div class="developers">
+					<div class="container_24">
+						<div class="grid_8">
+							<div class="developer">
+								<div class="photo">
+									<img src="img/developers/volkov.jpg" alt="Volkov German">
+								</div>
+								<div class="name">
+									Volkov German
+								</div>
+								<div class="contacts">
+									volkov.german.1997@gmail.com
+								</div>
+							</div>
+						</div>
+						<div class="grid_8">
+							<div class="developer">
+								<div class="photo">
+									<img src="img/developers/bylnov.jpg" alt="Nikolay Bilnov">
+								</div>
+								<div class="name">
+									Nikolay Bilnov
+								</div>
+								<div class="contacts">
+									bylnov.nick@yandex.ru
+								</div>
+							</div>
+						</div>
+						<div class="grid_8">
+							<div class="developer">
+								<div class="photo">
+									<img src="img/developers/kukharchuk.jpg" alt="Igor Kukharchuk">
+								</div>
+								<div class="name">
+									Igor Kukharchuk
+								</div>
+								<div class="contacts">
+									igorkukharchuk@gmail.com
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
 		</div>
 	</main>
 
-	<footer>
+	<footer class="footer">
 		<div class="container">
-			Footer
+			AlertSubsystem, 2016
 		</div>
 	</footer>
+	
+	<script src="scripts/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
 
 </body>
 </html>
