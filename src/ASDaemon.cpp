@@ -71,6 +71,7 @@ void * messagesQueue_processing(void *message) {
 }
 
 void * alertQueue_processing(void *message) {
+    int max_alerts_per_mail = conf.GetMaxAlerts();
     
     while (1){
         std::cout << "Alert Queue Thread - Start sleeping 30 seconds" << std::endl;
@@ -81,7 +82,8 @@ void * alertQueue_processing(void *message) {
         std::cout << "Alert Queue Thread - There are " << alertQueue.size() << " new alerts in queue!" << std::endl;
         
         std::vector<Alert> alertsToSend;
-        while(!alertQueue.empty()) {
+        int alertCount = max_alerts_per_mail;
+        while(!alertQueue.empty() && alertCount--) {
             Alert alertFromQueue = alertQueue.front();
             alertQueue.pop();
                 
@@ -123,7 +125,7 @@ int main() {
     // ZeroMQ init
     zmq::context_t context (1);
     zmq::socket_t socket (context, ZMQ_REP);
-    socket.bind ("tcp://*:55555"); 
+    socket.bind ("tcp://*:4444"); 
     
     while (1) {
         // Wait for the request from client

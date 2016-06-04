@@ -1,1 +1,1 @@
-{"definitions":{"defs":{"message":"gl_mes","periodicity_time":123,"priority":"LOW","recipients_email":["bylnov.nick@yandex.ru"],"severity":"ERROR"},"origins":{"./a.out":{"types":{"math":{"defs":{"message":"messageplease"}}}}}},"max_alerts":10,"mode":"period"}
+{"definitions":{"defs":{"message":"gl_mes","periodicity_time":123,"priority":"LOW","recipients_email":["bylnov.nick@yandex.ru"],"severity":"ERROR"},"origins":{"./a.out":{"types":{"math":{"defs":{"message":"messageplease"}}}}}},"max_alerts":3,"mode":"period"}
