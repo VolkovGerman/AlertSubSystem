@@ -33,7 +33,7 @@ enum State {
 struct Key {
 	std::string origin;
 	std::string type;
-	int subkey;
+	std::string subkey;
 };
 
 struct Value {	
@@ -91,17 +91,8 @@ class Alert {
             return 0;
         }  
         
-        int get_subkey(){
+        std::string get_subkey(){
             return alert_key_.subkey;
-        }
-        
-        std::string get_subkey_string() {
-            int a = 10;
-            std::stringstream ss;
-            ss << a;
-            std::string str = ss.str();
-            
-            return str;
         }
         
         int set_subkey(int num){
@@ -142,6 +133,18 @@ class Alert {
             return 0;
         }
         
+        int set_priority_from_string(std::string pr) { 
+             if (pr == "HIGH") {
+                this->alert_value_.priority = HIGH;
+            } else if (pr == "MEDIUM") {
+                this->alert_value_.priority = MEDIUM;
+            } else if (pr == "LOW") {
+                this->alert_value_.priority = LOW;
+            }
+            
+            return 0;
+        }
+        
         Severity get_severity(){
             return alert_value_.severity;
         }
@@ -165,6 +168,20 @@ class Alert {
         
         int set_severity(Severity val){
             alert_value_.severity = val;
+            return 0;
+        }
+        
+        int set_severity_from_string(std::string sv) { 
+            if (sv == "CRITICAL") {
+                this->alert_value_.severity = CRITICAL;
+            } else if (sv == "ERROR") {
+                this->alert_value_.severity = ERROR;
+            } else if (sv == "WARNING") {
+                this->alert_value_.severity = WARNING;
+            } else if (sv == "DEBUG") {
+                this->alert_value_.severity = DEBUG;
+            }
+            
             return 0;
         }
         
@@ -228,6 +245,10 @@ class Alert {
             j["type"] = this->alert_key_.type;
             j["subkey"] = this->alert_key_.subkey;
             
+            j["priority"] = this->get_priority_string();
+            j["severity"] = this->get_severity_string();
+            j["message"] = this->alert_value_.message;
+            
             return j.dump();    
         }
         
@@ -243,6 +264,12 @@ class Alert {
                      this->alert_key_.type = it.value();  
                 } else if (it.key() == "subkey") {
                      this->alert_key_.subkey = it.value();  
+                } else if (it.key() == "priority") {
+                    set_priority_from_string(it.value());
+                } else if (it.key() == "severity") {
+                    set_severity_from_string(it.value());
+                } else if (it.key() == "message") {
+                    this->alert_value_.message = it.value();
                 }
                 
             }
@@ -264,7 +291,7 @@ class Alert {
                 "</tr>"
                 "<tr>"
                     "<td style='width:20%; text-align: right; font-weight: bold;'>Subkey:</td>"    
-                    "<td>" + this->get_subkey_string() + "</td>"
+                    "<td>" + this->get_subkey() + "</td>"
                 "</tr>" 
                 "<tr>"
                     "<td style='width:20%; text-align: right; font-weight: bold;'>Date and time:</td>"

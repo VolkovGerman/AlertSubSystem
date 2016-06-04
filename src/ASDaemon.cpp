@@ -64,6 +64,14 @@ void * messagesQueue_processing(void *message) {
                 alertQueue.push(receivedAlert);
             }
         
+        } else if (jReq["operation"] == "get_alert") {
+            DB database;
+            json j;
+            j["origin"] = jReq["origin"];
+            j["type"] = jReq["type"];
+            j["subkey"] = jReq["subkey"];
+            
+            database.Get(j.dump());
         }
     }   
     

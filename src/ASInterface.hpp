@@ -25,12 +25,12 @@ namespace AlertSubSystem{
         //  Get the reply.
         zmq::message_t reply;
         socket.recv (&reply);
-        // RETURN THE REPLY FROM DAEMON
+        std::string replyMessage = std::string(static_cast<char*>(reply.data()), reply.size());
         
-        return 0;
+        return replyMessage;
     }
     
-    int PutAlert(std::string origin, std::string type, int subkey) {
+    int PutAlert(std::string origin, std::string type, std::string subkey) {
         Alert reqAlert(origin, type, subkey);
         DB database;
         
@@ -48,7 +48,7 @@ namespace AlertSubSystem{
         return 0;
     }
     
-    std::string GetAlert(std::string origin, std::string type, int subkey) {
+    Alert GetAlert(std::string origin, std::string type, std::string subkey) {
         Alert reqAlert(origin, type, subkey);
         Alert resAlert;
         DB database;
@@ -61,17 +61,15 @@ namespace AlertSubSystem{
         std::string str11 = database.Get(j.dump());
         
         // Send message to daemon: operation number, alert key
-        /*
         json j;
         j["operation"] = "get_alert";
         j["alert_key"]["origin"] = origin;
         j["alert_key"]["type"] = type;
         j["alert_key"]["subkey"] = subkey;
-        SendToDaemon(j.dump());
-        */
+        std::string replyStr = SendToDaemon(j.dump());
+        resAlert = json::parse(replyStr);
         
-        //resAlert.Deserialize(str11);
-        return str11;
+        return resAlert;
     }
     
     std::vector<Alert> GetAlerts(std::string origin, std::string type) {
