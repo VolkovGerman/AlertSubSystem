@@ -10,16 +10,31 @@
 #include "Alert.hpp"
 #include "DB.hpp"
 #include "Email.hpp"
+#include "Config.hpp"
 #include "json.hpp"
 
 // for convenience
 using json = nlohmann::json;
 
+Config conf;
+
 std::queue<std::string> messagesQueue;
 std::queue<Alert> alertQueue;
 
-void * messagesQueue_processing(void *message) {
+int FillAlertFields(Alert &newAlert) {
+    std::string origin = newAlert.get_origin();
+    std::string type = newAlert.get_type();
+    std::string subkey = newAlert.get_subkey_string();
     
+    newAlert.set_priority(conf.GetPriority(origin, type, subkey));
+    newAlert.set_severity(conf.GetSeverity(origin, type, subkey));
+    newAlert.set_message(conf.GetMessage(origin, type, subkey));
+    
+    return 0;
+}
+
+void * messagesQueue_processing(void *message) {
+
     while (1){
         while (!messagesQueue.size()) {};
         
@@ -33,10 +48,11 @@ void * messagesQueue_processing(void *message) {
         if (jReq["operation"] == "new_alert") {
         
             // Watch fields from config, write them to alert object
+            FillAlertFields(receivedAlert);
             
             // If mode is immidiate - send email
             int mode = 0;
-            if (mode) {
+            if (conf.GetMode() == "im") {
                 // send email
                 Email mail;
                 
@@ -73,14 +89,18 @@ void * alertQueue_processing(void *message) {
             alertsToSend.push_back(alertFromQueue);
         }        
         
-        std::cout << alertsToSend.size() << std::endl;
-        for (int i = 0; i < alertsToSend.size(); i++){
-            std::cout << alertsToSend[i].Serialize() << std::endl;
+        if (alertsToSend.size() != 0){
+            // Show all alerts
+            std::cout << alertsToSend.size() << std::endl;
+            for (int i = 0; i < alertsToSend.size(); i++){
+                std::cout << alertsToSend[i].Serialize() << std::endl;
+            }
+        
+            Email mail;
+            mail.setRecipient("volkov.german.1997@gmail.com");
+            mail.SendAlerts(alertsToSend);
         }
         
-        Email mail;
-        mail.setRecipient("volkov.german.1997@gmail.com");
-        mail.SendAlerts(alertsToSend);
     }
  
     return message;   
@@ -93,19 +113,22 @@ int main() {
     pthread_t th1, th2;
     
     pthread_create(&th1, NULL, messagesQueue_processing, (void *)message);
-    pthread_create(&th2, NULL, alertQueue_processing, (void *)message);
+    std::cout << conf.GetMode() << std::endl;
+    if (conf.GetMode() == "period"){
+        pthread_create(&th2, NULL, alertQueue_processing, (void *)message);
+    }
     
     std::cout << "Daemon started..." << std::endl;
     
     // ZeroMQ init
     zmq::context_t context (1);
     zmq::socket_t socket (context, ZMQ_REP);
-    socket.bind ("tcp://*:5555"); 
+    socket.bind ("tcp://*:55555"); 
     
     while (1) {
         // Wait for the request from client
         zmq::message_t request;
-        socket.recv (&request);
+        socket.recv(&request);
         std::string reqMessage = std::string(static_cast<char*>(request.data()), request.size());
         
         messagesQueue.push(reqMessage);
@@ -117,6 +140,9 @@ int main() {
     }
     
     pthread_join(th1, NULL);
+    if (conf.GetMode() == "period"){
+        pthread_join(th2, NULL);
+    }
     
     return 0;
 }

@@ -11,13 +11,13 @@
 using json = nlohmann::json;
 
 enum Priority {
-    HIGH,
-    MEDIUM,
-    LOW
+	HIGH,
+	MEDIUM,
+	LOW
 };
 
 enum Severity {
-    CRITICAL,
+	CRITICAL,
 	ERROR,
 	WARNING,
 	DEBUG
@@ -122,6 +122,21 @@ class Alert {
             return alert_value_.priority;
         }
         
+        std::string get_priority_string(){
+            switch (alert_value_.priority) {
+                case HIGH:
+                    return "HIGH";
+                case MEDIUM:
+                    return "MEDIUM";
+                case LOW:
+                    return "LOW";
+                default:
+                    return "Wrong priority...";
+            }
+            
+            return NULL;
+        }
+        
         int set_priority(Priority val){
             alert_value_.priority = val;
             return 0;
@@ -129,6 +144,23 @@ class Alert {
         
         Severity get_severity(){
             return alert_value_.severity;
+        }
+        
+        std::string get_severity_string(){
+            switch (alert_value_.severity) {
+                case CRITICAL:
+                    return "CRITICAL";
+                case ERROR:
+                    return "ERROR";
+                case WARNING:
+                    return "WARNING";
+                case DEBUG:
+                    return "DEBUG";
+                default:
+                    return "Wrong severity...";
+            }
+            
+            return NULL;
         }
         
         int set_severity(Severity val){
@@ -221,10 +253,7 @@ class Alert {
         // Make html table of data from alert, return string
         std::string MakeHTMLTable(){
             return 
-            "<table style='width: 100%; border-collapse: collapse;' border=1 cellpadding=5>"
-                "<caption align='center' style='padding-bottom: 20px'>"
-                    "AlertSubSystem Notification"
-                "</caption>"
+            "<table style='width: 100%; border-collapse: collapse; margin-bottom: 20px' border=1 cellpadding=5>"
                 "<tr>"
                     "<td style='width:20%; text-align: right; font-weight: bold;'>Origin:</td>"
                     "<td>" + this->get_origin() + "</td>"
@@ -238,20 +267,20 @@ class Alert {
                     "<td>" + this->get_subkey_string() + "</td>"
                 "</tr>" 
                 "<tr>"
-                    "<td style='width:20%; text-align: right; font-weight: bold;'>date_ and time_:</td>"
+                    "<td style='width:20%; text-align: right; font-weight: bold;'>Date and time:</td>"
                     "<td>" + this->get_creation_time_pretty() + "</td>"
                 "</tr>"
                 "<tr>"
-                    "<td style='width:20%; text-align: right; font-weight: bold;'>priority_:</td>"
-                    "<td></td>"
+                    "<td style='width:20%; text-align: right; font-weight: bold;'>Priority:</td>"
+                    "<td>" + this->get_priority_string() + "</td>"
                 "</tr>"
                 "<tr>"
-                    "<td style='width:20%; text-align: right; font-weight: bold;'>severity_:</td>"
-                    "<td></td>"
+                    "<td style='width:20%; text-align: right; font-weight: bold;'>Severity:</td>"
+                    "<td>" + this->get_severity_string() + "</td>"
                 "</tr>"
                 "<tr>"
-                    "<td style='width:20%; text-align: right; font-weight: bold;'>message_:</td>"
-                    "<td></td>"
+                    "<td style='width:20%; text-align: right; font-weight: bold;'>Message:</td>"
+                    "<td>" + this->get_message() + "</td>"
                 "</tr>"
             "</table>";
         }

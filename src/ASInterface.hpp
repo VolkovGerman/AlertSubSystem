@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 #include <zmq.hpp>
 
@@ -14,7 +16,7 @@ namespace AlertSubSystem{
         //  Prepare our context and socket
         zmq::context_t context (1);
         zmq::socket_t socket (context, ZMQ_REQ);
-        socket.connect ("tcp://localhost:5555");
+        socket.connect ("tcp://localhost:55555");
         
         zmq::message_t request (message.length());
         memcpy (request.data(), message.c_str(), message.length());
