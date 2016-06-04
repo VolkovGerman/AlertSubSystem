@@ -54,10 +54,13 @@ class DB {
             std::string file_data = this->GetContents();
             json jdata = json::parse(file_data);
             
+            
             json jfields = json::parse(str_fields);
             
-            std::string origin, type;
-            int subkey;
+            
+            std::cout << jfields.dump(4) << std::endl;
+            
+            std::string origin, type, subkey;
             
             json result;
             
@@ -109,7 +112,7 @@ class DB {
                 }
                 
             }
-
+                
             return result.dump();
         }
         

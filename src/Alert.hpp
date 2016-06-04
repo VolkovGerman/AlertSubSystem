@@ -17,8 +17,8 @@ enum Priority {
 };
 
 enum Severity {
-	CRITICAL,
-	ERROR,
+    CRITICAL,
+	ERROR,  
 	WARNING,
 	DEBUG
 };
@@ -57,7 +57,7 @@ class Alert {
         // Constructors
         Alert(){};
         
-        Alert(std::string origin, std::string type, int subkey) {
+        Alert(std::string origin, std::string type, std::string subkey) {
             alert_key_.origin = origin;
             alert_key_.type = type;
             alert_key_.subkey = subkey;
@@ -122,10 +122,10 @@ class Alert {
                 case LOW:
                     return "LOW";
                 default:
-                    return "Wrong priority...";
+                    return "";
             }
             
-            return NULL;
+            return "";
         }
         
         int set_priority(Priority val){
@@ -151,19 +151,19 @@ class Alert {
         
         std::string get_severity_string(){
             switch (alert_value_.severity) {
-                case CRITICAL:
-                    return "CRITICAL";
                 case ERROR:
                     return "ERROR";
+                case CRITICAL:
+                    return "CRITICAL";
                 case WARNING:
                     return "WARNING";
                 case DEBUG:
                     return "DEBUG";
                 default:
-                    return "Wrong severity...";
+                    return "";
             }
             
-            return NULL;
+            return "";
         }
         
         int set_severity(Severity val){
@@ -238,18 +238,24 @@ class Alert {
         
         // Serialize / Deserialize
         
-        std::string Serialize(){
+        std::string SerializeKey() {
             json j;
             
             j["origin"] = this->alert_key_.origin;
             j["type"] = this->alert_key_.type;
             j["subkey"] = this->alert_key_.subkey;
             
-            j["priority"] = this->get_priority_string();
-            j["severity"] = this->get_severity_string();
-            j["message"] = this->alert_value_.message;
+            return j.dump();
+        }
+        
+        std::string SerializeValue() {
+            json j;
             
-            return j.dump();    
+            j["message"] = this->alert_value_.message;
+            j["severity"] = this->get_severity_string();
+            j["priority"] = this->get_priority_string();
+            
+            return j.dump();
         }
         
         int Deserialize(std::string str) {
@@ -273,6 +279,8 @@ class Alert {
                 }
                 
             }
+            
+            return 0;
         }
         
         // Other

@@ -12,11 +12,11 @@ using json = nlohmann::json;
 
 namespace AlertSubSystem{
     
-    int SendToDaemon(std::string message){
+    std::string SendToDaemon(std::string message){
         //  Prepare our context and socket
         zmq::context_t context (1);
         zmq::socket_t socket (context, ZMQ_REQ);
-        socket.connect ("tcp://localhost:4444");
+        socket.connect ("tcp://localhost:7777");
         
         zmq::message_t request (message.length());
         memcpy (request.data(), message.c_str(), message.length());
@@ -33,12 +33,16 @@ namespace AlertSubSystem{
     int PutAlert(std::string origin, std::string type, std::string subkey) {
         Alert reqAlert(origin, type, subkey);
         DB database;
+        json jAlertToDB;
         
         // Put alert to bd
-        database.Put(reqAlert.Serialize());
+        jAlertToDB["origin"] = origin;
+        jAlertToDB["type"] = type;
+        jAlertToDB["subkey"] = subkey;
+        database.Put(jAlertToDB.dump());
         
         // Send message to daemon, which contains alert key and operation number (0) 
-        json j, j_alert;
+        json j;
         j["operation"] = "new_alert";
         j["alert_key"]["origin"] = origin;
         j["alert_key"]["type"] = type;
@@ -55,19 +59,13 @@ namespace AlertSubSystem{
         
         // Put alert to bd
         json j;
-        j["origin"] = origin;
-        j["type"] = type;
-        j["subkey"] = subkey;
-        std::string str11 = database.Get(j.dump());
-        
-        // Send message to daemon: operation number, alert key
-        json j;
         j["operation"] = "get_alert";
         j["alert_key"]["origin"] = origin;
         j["alert_key"]["type"] = type;
         j["alert_key"]["subkey"] = subkey;
+        
         std::string replyStr = SendToDaemon(j.dump());
-        resAlert = json::parse(replyStr);
+        resAlert.Deserialize(replyStr);
         
         return resAlert;
     }

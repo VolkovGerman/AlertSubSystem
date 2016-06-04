@@ -18,13 +18,12 @@ using json = nlohmann::json;
 
 Config conf;
 
-std::queue<std::string> messagesQueue;
 std::queue<Alert> alertQueue;
 
 int FillAlertFields(Alert &newAlert) {
     std::string origin = newAlert.get_origin();
     std::string type = newAlert.get_type();
-    std::string subkey = newAlert.get_subkey_string();
+    std::string subkey = newAlert.get_subkey();
     
     newAlert.set_priority(conf.GetPriority(origin, type, subkey));
     newAlert.set_severity(conf.GetSeverity(origin, type, subkey));
@@ -33,49 +32,59 @@ int FillAlertFields(Alert &newAlert) {
     return 0;
 }
 
-void * messagesQueue_processing(void *message) {
-
-    while (1){
-        while (!messagesQueue.size()) {};
-        
-        std::string reqMessage = messagesQueue.front();
-        messagesQueue.pop();
-        json jReq = json::parse(reqMessage);
-        
-        Alert receivedAlert;
-        receivedAlert.Deserialize(jReq["alert_key"].dump());
-        
-        if (jReq["operation"] == "new_alert") {
-        
-            // Watch fields from config, write them to alert object
-            FillAlertFields(receivedAlert);
-            
-            // If mode is immidiate - send email
-            int mode = 0;
-            if (conf.GetMode() == "im") {
-                // send email
-                Email mail;
-                
-                std::cout << "Alert to email: " << receivedAlert.Serialize() << std::endl;
-                
-                mail.setRecipient("volkov.german.1997@gmail.com");
-                mail.SendAlert(receivedAlert);
-            } else {
-                alertQueue.push(receivedAlert);
-            }
-        
-        } else if (jReq["operation"] == "get_alert") {
-            DB database;
-            json j;
-            j["origin"] = jReq["origin"];
-            j["type"] = jReq["type"];
-            j["subkey"] = jReq["subkey"];
-            
-            database.Get(j.dump());
-        }
-    }   
+std::string MessagesProcessing(std::string reqMessage) {
+    std::string result;
+    json jReq = json::parse(reqMessage);
     
-    return message;
+    //std::cout << "4444444444";
+    
+    Alert receivedAlert;
+    receivedAlert.Deserialize(jReq["alert_key"].dump());
+    
+    //std::cout << "333333333";
+    
+    // Watch fields from config, write them to alert object
+    FillAlertFields(receivedAlert);
+    
+    std::cout << "----" << receivedAlert.SerializeValue() << "----";
+    
+    //std::cout << receivedAlert.SerializeValue();
+    
+    //std::cout << "111111111";
+    
+    if (jReq["operation"] == "new_alert") {    
+        // If mode is immidiate - send email
+        int mode = 0;
+        if (conf.GetMode() == "immidiatly") {
+            // send email
+            Email mail;
+            
+            std::cout << "Alert to email: " << receivedAlert.SerializeKey() << std::endl;
+            
+            mail.setRecipient("volkov.german.1997@gmail.com");
+            mail.SendAlert(receivedAlert);
+        } else {
+            alertQueue.push(receivedAlert);
+        }
+        
+        result = "Done";
+    } else if (jReq["operation"] == "get_alert") {
+        DB database;
+        json j;
+        j["origin"] = receivedAlert.get_origin();
+        j["type"] = receivedAlert.get_type();
+        j["subkey"] = receivedAlert.get_subkey();
+        
+        j["message"] = receivedAlert.get_message();
+        j["priority"] = receivedAlert.get_priority_string();
+        j["severity"] = receivedAlert.get_severity_string();
+        
+        //result = database.Get(j.dump()); 
+        result = j.dump();
+        //std::cout << result << "0000000000";
+    }
+    
+    return result;
 }
 
 void * alertQueue_processing(void *message) {
@@ -83,7 +92,7 @@ void * alertQueue_processing(void *message) {
     
     while (1){
         std::cout << "Alert Queue Thread - Start sleeping 30 seconds" << std::endl;
-        sleep(30);
+        sleep(conf.GetPeriodisityTime());
         std::cout << "Alert Queue Thread - End sleeping 30 seconds" << std::endl;
         
         std::cout << "Alert Queue Thread - Watching queue..." << std::endl;
@@ -103,7 +112,7 @@ void * alertQueue_processing(void *message) {
             // Show all alerts
             std::cout << alertsToSend.size() << std::endl;
             for (int i = 0; i < alertsToSend.size(); i++){
-                std::cout << alertsToSend[i].Serialize() << std::endl;
+                std::cout << alertsToSend[i].SerializeKey() << std::endl;
             }
         
             Email mail;
@@ -120,20 +129,20 @@ int main() {
     
     const char* message = "Heeelllooo!";
     
-    pthread_t th1, th2;
+    pthread_t th1;
     
-    pthread_create(&th1, NULL, messagesQueue_processing, (void *)message);
-    std::cout << conf.GetMode() << std::endl;
-    if (conf.GetMode() == "period"){
-        pthread_create(&th2, NULL, alertQueue_processing, (void *)message);
+    
+    std::cout << conf.GetMode(); 
+    if (conf.GetMode() == "batch"){
+        pthread_create(&th1, NULL, alertQueue_processing, (void *)message);
     }
-    
+
     std::cout << "Daemon started..." << std::endl;
     
     // ZeroMQ init
     zmq::context_t context (1);
     zmq::socket_t socket (context, ZMQ_REP);
-    socket.bind ("tcp://*:4444"); 
+    socket.bind ("tcp://*:7777"); 
     
     while (1) {
         // Wait for the request from client
@@ -141,17 +150,17 @@ int main() {
         socket.recv(&request);
         std::string reqMessage = std::string(static_cast<char*>(request.data()), request.size());
         
-        messagesQueue.push(reqMessage);
+        std::string res1 = MessagesProcessing(reqMessage);
+        std::cout << res1;
         
         //  Send reply back to client
-        zmq::message_t reply (4);
-        memcpy (reply.data(), "Done", 4);
-        socket.send (reply); 
+        zmq::message_t reply (res1.length());
+        memcpy (reply.data(), res1.c_str(), res1.length());
+        socket.send (reply);
     }
     
-    pthread_join(th1, NULL);
-    if (conf.GetMode() == "period"){
-        pthread_join(th2, NULL);
+    if (conf.GetMode() == "batch") {
+        pthread_join(th1, NULL);
     }
     
     return 0;
