@@ -43,10 +43,17 @@ class DB {
             json jdata = json::parse(file_data);
             
             json jalert = json::parse(str_alert);
+
+            json jAlertKey;
+            jAlertKey["origin"] = jalert["origin"];
+            jAlertKey["type"] = jalert["type"];
+            jAlertKey["subkey"] = jalert["subkey"];
+
+            if (!this->HasActiveAlert(jAlertKey.dump())) {
+                jdata.push_back(jalert);
+                this->WriteToDB(jdata.dump());
+            }
             
-            jdata.push_back(jalert);
-            
-            this->WriteToDB(jdata.dump());
             return 1;
         }
         
@@ -172,6 +179,108 @@ class DB {
             
             this->WriteToDB(jdata.dump());
             return 1;   
+        }
+
+        int HasActiveAlert(std::string str_fields) {
+            std::string file_data = this->GetContents();
+            json jdata = json::parse(file_data);
+
+            json jfields = json::parse(str_fields);
+
+            for (json::iterator it = jdata.begin(); it != jdata.end(); ++it) {
+                json obj = *it;
+                if (obj["origin"] == jfields["origin"] 
+                    && obj["type"] == jfields["type"] 
+                    && obj["subkey"] == jfields["subkey"]
+                    && obj["state"] != "PROCESSED") {
+                    return 1;
+                } 
+            }
+
+            return 0;
+        }
+
+        int HasOldActiveAlert(std::string str_fields) {
+            std::string file_data = this->GetContents();
+            json jdata = json::parse(file_data);
+
+            json jfields = json::parse(str_fields);
+
+            for (json::iterator it = jdata.begin(); it != jdata.end(); ++it) {
+                json obj = *it;
+                if (obj["origin"] == jfields["origin"] 
+                    && obj["type"] == jfields["type"] 
+                    && obj["subkey"] == jfields["subkey"]
+                    && obj["state"] != "NEW"
+                    && obj["state"] != "PROCESSED") {
+                    return 1;
+                } 
+            }
+
+            return 0;
+        }
+
+        int SetState(std::string str_fields, std::string new_state) {
+            std::string file_data = this->GetContents();
+            json jdata = json::parse(file_data);
+
+            json jfields = json::parse(str_fields);
+
+            for (json::iterator it = jdata.begin(); it != jdata.end(); ++it) {
+                json obj = *it;
+                if (obj["origin"] == jfields["origin"] 
+                    && obj["type"] == jfields["type"] 
+                    && obj["subkey"] == jfields["subkey"]
+                    && obj["state"] != "PROCESSED") {
+                    (*it)["state"] = new_state;
+                    break;
+                } 
+            }
+
+            this->WriteToDB(jdata.dump());
+            return 0;
+        }
+
+        int GetCreationTime(std::string str_fields) {
+            std::string file_data = this->GetContents();
+            json jdata = json::parse(file_data);
+
+            json jfields = json::parse(str_fields);
+
+            for (json::iterator it = jdata.begin(); it != jdata.end(); ++it) {
+                json obj = *it;
+                if (obj["origin"] == jfields["origin"] 
+                    && obj["type"] == jfields["type"] 
+                    && obj["subkey"] == jfields["subkey"]
+                    && obj["state"] != "PROCESSED") {
+                    std::cout << obj["creation_time"] << std::endl;
+                    auto num = obj["creation_time"];
+                    return num;
+                } 
+            }
+
+            return 0;
+        }
+
+        int SetCreationTime(std::string str_fields, int cr_time) {
+            std::string file_data = this->GetContents();
+            json jdata = json::parse(file_data);
+
+            json jfields = json::parse(str_fields);
+
+            for (json::iterator it = jdata.begin(); it != jdata.end(); ++it) {
+                json obj = *it;
+                if (obj["origin"] == jfields["origin"] 
+                    && obj["type"] == jfields["type"] 
+                    && obj["subkey"] == jfields["subkey"]
+                    && obj["state"] != "PROCESSED") {
+                    (*it)["creation_time"] = cr_time;
+                    break;
+                } 
+            }
+
+            this->WriteToDB(jdata.dump());
+            return 0;
         }
     
 };

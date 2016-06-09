@@ -61,15 +61,21 @@ class Alert {
             alert_key_.origin = origin;
             alert_key_.type = type;
             alert_key_.subkey = subkey;
+
+            alert_value_.creation_time = time(0);
         }
         
         Alert(std::string origin, std::string type) {
             alert_key_.origin = origin;
             alert_key_.type = type;
+
+            alert_value_.creation_time = time(0);
         }
         
         Alert(std::string origin) {
             alert_key_.origin = origin;
+
+            alert_value_.creation_time = time(0);
         }
         
         // Get / set methods
@@ -211,9 +217,16 @@ class Alert {
             alert_value_.periodicity_time = t;
             return 0;
         }
+
+        int set_creation_time() {
+            time_t now = time(0);
+            std::cout << "При создании" << now << std::endl;
+            this->alert_value_.creation_time = now;
+            return 0;  
+        }
         
-        time_t get_creation_time(){
-            return alert_value_.creation_time;
+        time_t get_creation_time() {
+            return this->alert_value_.creation_time;
         }
         
         std::string get_creation_time_pretty() {   
@@ -276,6 +289,8 @@ class Alert {
                     set_severity_from_string(it.value());
                 } else if (it.key() == "message") {
                     this->alert_value_.message = it.value();
+                } else if (it.key() == "creation_time") {
+                    this->alert_value_.creation_time = it.value();
                 }
                 
             }

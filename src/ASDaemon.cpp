@@ -36,21 +36,13 @@ std::string MessagesProcessing(std::string reqMessage) {
     std::string result;
     json jReq = json::parse(reqMessage);
     
-    //std::cout << "4444444444";
-    
     Alert receivedAlert;
     receivedAlert.Deserialize(jReq["alert_key"].dump());
-    
-    //std::cout << "333333333";
     
     // Watch fields from config, write them to alert object
     FillAlertFields(receivedAlert);
     
-    std::cout << "----" << receivedAlert.SerializeValue() << "----";
-    
-    //std::cout << receivedAlert.SerializeValue();
-    
-    //std::cout << "111111111";
+    //std::cout << "----" << receivedAlert.SerializeValue() << "----";
     
     if (jReq["operation"] == "new_alert") {    
         // If mode is immidiate - send email
@@ -87,38 +79,82 @@ std::string MessagesProcessing(std::string reqMessage) {
     return result;
 }
 
-void * alertQueue_processing(void *message) {
+void *alertQueue_processing(void *message) {
+    DB database;
+    std::vector<Alert> alertsToSend;
     int max_alerts_per_mail = conf.GetMaxAlerts();
     
     while (1){
-        std::cout << "Alert Queue Thread - Start sleeping 30 seconds" << std::endl;
+        std::cout << "Alert Queue Thread - Start sleeping " << conf.GetPeriodisityTime() << " seconds" << std::endl;
         sleep(conf.GetPeriodisityTime());
-        std::cout << "Alert Queue Thread - End sleeping 30 seconds" << std::endl;
+        std::cout << "Alert Queue Thread - End sleeping" << std::endl;
         
+        // Is there something in queue ?
         std::cout << "Alert Queue Thread - Watching queue..." << std::endl;
         std::cout << "Alert Queue Thread - There are " << alertQueue.size() << " new alerts in queue!" << std::endl;
-        
-        std::vector<Alert> alertsToSend;
-        int alertCount = max_alerts_per_mail;
+        std::cout << "Alert Queue Thread - There are " << alertsToSend.size() << " old alerts in queue!" << std::endl;
+
+        int alertCount = max_alerts_per_mail - alertsToSend.size();
+        //std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<" << max_alerts_per_mail << std::endl;
         while(!alertQueue.empty() && alertCount--) {
             Alert alertFromQueue = alertQueue.front();
-            alertQueue.pop();
-                
-            // If periodicity is okay - send, and then change state of the alert in database
-            alertsToSend.push_back(alertFromQueue);
-        }        
+            
+            // If periodicity is okay - add to vector, and then change state of the alert in database
+
+            // Check periodicity
+            time_t alertPeriodicity = conf.GetPeriodisityTime(alertFromQueue.get_origin(), alertFromQueue.get_type(), alertFromQueue.get_subkey());
+            
+            std::cout << "---------------------------------" << std::endl;
+            std::cout << alertPeriodicity << std::endl;
+            std::cout << "---------------------------------" << std::endl;
+            std::cout << alertFromQueue.get_creation_time() << std::endl;
+            std::cout << "---------------------------------" << std::endl;
+            time_t time1 = time(0);
+            std::cout << time1 << std::endl;
+            std::cout << "---------------------------------" << std::endl;
+
+            json jAlertFields;
+            jAlertFields["origin"] = alertFromQueue.get_origin();
+            jAlertFields["type"] = alertFromQueue.get_type();
+            jAlertFields["subkey"] = alertFromQueue.get_subkey();
+
+            if (database.HasOldActiveAlert(jAlertFields.dump())) {
+                if (database.GetCreationTime(jAlertFields.dump()) + alertPeriodicity > time(0)) {
+                    std::cout << "Alert -- For this alert periodicity time has NOT passed" << std::endl;
+                } else {
+                    alertsToSend.push_back(alertFromQueue); 
+                    database.SetCreationTime(jAlertFields.dump(), alertFromQueue.get_creation_time());
+                    database.SetState(jAlertFields.dump(), "UNSTABLE");
+                }
+            } else {
+                alertsToSend.push_back(alertFromQueue);   
+                database.SetState(jAlertFields.dump(), "CLEARED");
+            }
+
+            // Pop this alert out
+            alertQueue.pop();             
+        }   
+
+        int resOfSending = 1;     
         
         if (alertsToSend.size() != 0){
             // Show all alerts
-            std::cout << alertsToSend.size() << std::endl;
+            // std::cout << alertsToSend.size() << std::endl;
             for (int i = 0; i < alertsToSend.size(); i++){
                 std::cout << alertsToSend[i].SerializeKey() << std::endl;
             }
         
             Email mail;
             mail.setRecipient("volkov.german.1997@gmail.com");
-            mail.SendAlerts(alertsToSend);
+            resOfSending = mail.SendAlerts(alertsToSend);
+            //std::cout << "|||||||||||||||||||||||||||||||||" << resOfSending << "|||||||||||||||||||||||||||||||||" << std::endl;
         }
+
+        if (resOfSending == 0) {  
+            // Everestring is okay - empty alertsToSend
+            alertsToSend.clear();
+        }
+        
         
     }
  
@@ -142,7 +178,7 @@ int main() {
     // ZeroMQ init
     zmq::context_t context (1);
     zmq::socket_t socket (context, ZMQ_REP);
-    socket.bind ("tcp://*:7777"); 
+    socket.bind ("tcp://*:2222"); 
     
     while (1) {
         // Wait for the request from client

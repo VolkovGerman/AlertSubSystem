@@ -149,6 +149,12 @@ class Email {
                 // Check for errors
                 if(res != CURLE_OK) {
                     fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+
+                    // No internet access - save changes
+                    std::cout << "SAVE CHANGES IMMIDIATLY!!!" << std::endl;
+
+                    // 1 - Means that smthng is not good, save alerts and try again
+                    return 1;
                 }
 
                 // Free the list of recipients 
@@ -190,7 +196,7 @@ class Email {
             
             payload_text[0] = resultMail.c_str();
             
-            SendEmail();
-            return 0;
+            int ret = SendEmail();
+            return ret;
         }
 };

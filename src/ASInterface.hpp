@@ -16,7 +16,7 @@ namespace AlertSubSystem{
         //  Prepare our context and socket
         zmq::context_t context (1);
         zmq::socket_t socket (context, ZMQ_REQ);
-        socket.connect ("tcp://localhost:7777");
+        socket.connect ("tcp://localhost:2222");
         
         zmq::message_t request (message.length());
         memcpy (request.data(), message.c_str(), message.length());
@@ -34,11 +34,13 @@ namespace AlertSubSystem{
         Alert reqAlert(origin, type, subkey);
         DB database;
         json jAlertToDB;
-        
+
         // Put alert to bd
         jAlertToDB["origin"] = origin;
         jAlertToDB["type"] = type;
         jAlertToDB["subkey"] = subkey;
+        jAlertToDB["creation_time"] = reqAlert.get_creation_time();
+        jAlertToDB["state"] = "NEW";
         database.Put(jAlertToDB.dump());
         
         // Send message to daemon, which contains alert key and operation number (0) 
@@ -47,8 +49,10 @@ namespace AlertSubSystem{
         j["alert_key"]["origin"] = origin;
         j["alert_key"]["type"] = type;
         j["alert_key"]["subkey"] = subkey;
+        j["alert_key"]["creation_time"] = reqAlert.get_creation_time();
+        j["alert_key"]["state"] = "NEW";
         SendToDaemon(j.dump());
-        
+
         return 0;
     }
     
