@@ -13,14 +13,16 @@ using json = nlohmann::json;
 enum Priority {
 	HIGH,
 	MEDIUM,
-	LOW
+	LOW,
+    NO_PR
 };
 
 enum Severity {
     CRITICAL,
 	ERROR,  
 	WARNING,
-	DEBUG
+	DEBUG,
+    NO_SV
 };
 
 enum State {
@@ -55,7 +57,12 @@ class Alert {
     public:
         
         // Constructors
-        Alert(){};
+        Alert(){
+            alert_value_.creation_time = time(0);
+            alert_value_.priority = NO_PR;
+            alert_value_.severity = NO_SV;
+            alert_value_.message = "";
+        };
         
         Alert(std::string origin, std::string type, std::string subkey) {
             alert_key_.origin = origin;
@@ -63,6 +70,9 @@ class Alert {
             alert_key_.subkey = subkey;
 
             alert_value_.creation_time = time(0);
+            alert_value_.priority = NO_PR;
+            alert_value_.severity = NO_SV;
+            alert_value_.message = "";
         }
         
         Alert(std::string origin, std::string type) {
@@ -70,12 +80,18 @@ class Alert {
             alert_key_.type = type;
 
             alert_value_.creation_time = time(0);
+            alert_value_.priority = NO_PR;
+            alert_value_.severity = NO_SV;
+            alert_value_.message = "";
         }
         
         Alert(std::string origin) {
             alert_key_.origin = origin;
 
             alert_value_.creation_time = time(0);
+            alert_value_.priority = NO_PR;
+            alert_value_.severity = NO_SV;
+            alert_value_.message = "";
         }
         
         // Get / set methods
@@ -127,6 +143,8 @@ class Alert {
                     return "MEDIUM";
                 case LOW:
                     return "LOW";
+                case NO_PR:
+                    return "NO_PRIORITY";
                 default:
                     return "";
             }
@@ -146,6 +164,8 @@ class Alert {
                 this->alert_value_.priority = MEDIUM;
             } else if (pr == "LOW") {
                 this->alert_value_.priority = LOW;
+            } else if (pr == "NO_PR") {
+                this->alert_value_.priority = NO_PR;
             }
             
             return 0;
@@ -165,6 +185,8 @@ class Alert {
                     return "WARNING";
                 case DEBUG:
                     return "DEBUG";
+                case NO_SV:
+                    return "NO_SV";
                 default:
                     return "";
             }
@@ -186,6 +208,8 @@ class Alert {
                 this->alert_value_.severity = WARNING;
             } else if (sv == "DEBUG") {
                 this->alert_value_.severity = DEBUG;
+            } else if (sv == "NO_SV") {
+                this->alert_value_.severity = NO_SV;
             }
             
             return 0;

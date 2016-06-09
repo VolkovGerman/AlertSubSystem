@@ -282,5 +282,68 @@ class DB {
             this->WriteToDB(jdata.dump());
             return 0;
         }
+
+        std::string GetMessage(std::string str_fields) {
+            std::string file_data = this->GetContents();
+            json jdata = json::parse(file_data);
+
+            json jfields = json::parse(str_fields);
+
+            for (json::iterator it = jdata.begin(); it != jdata.end(); ++it) {
+                json obj = *it;
+                if (obj["origin"] == jfields["origin"] &&
+                    obj["type"] == jfields["type"] &&
+                    obj["subkey"] == jfields["subkey"] &&
+                    obj["state"] != "PROCESSED" &&
+                    !obj["message"].is_null()) {
+                    auto num = obj["message"];
+                    return num;
+                } 
+            }
+
+            return "";
+        }
+
+        std::string GetPriority(std::string str_fields) {
+            std::string file_data = this->GetContents();
+            json jdata = json::parse(file_data);
+
+            json jfields = json::parse(str_fields);
+
+            for (json::iterator it = jdata.begin(); it != jdata.end(); ++it) {
+                json obj = *it;
+                if (obj["origin"] == jfields["origin"] && 
+                    obj["type"] == jfields["type"] && 
+                    obj["subkey"] == jfields["subkey"] && 
+                    obj["state"] != "PROCESSED" &&
+                    !obj["priority"].is_null()) {
+                    auto num = obj["priority"];
+                    return num;
+                } 
+            }
+
+            return " ";
+        }
+
+        std::string GetSeverity(std::string str_fields) {
+            std::string file_data = this->GetContents();
+            json jdata = json::parse(file_data);
+
+            json jfields = json::parse(str_fields);
+
+            for (json::iterator it = jdata.begin(); it != jdata.end(); ++it) {
+                json obj = *it;
+                if (obj["origin"] == jfields["origin"] && 
+                    obj["type"] == jfields["type"] && 
+                    obj["subkey"] == jfields["subkey"] && 
+                    obj["state"] != "PROCESSED" &&
+                    !obj["severity"].is_null()) {
+                    auto num = obj["severity"];
+                    return num;
+                } 
+            }
+
+            return "";
+        }
     
 };
