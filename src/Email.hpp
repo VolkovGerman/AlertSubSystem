@@ -189,9 +189,10 @@ class Email {
         
         int SendAlerts(std::vector<Alert> alerts) {
             std::string resultMail = this->MakeEmailHeader();
-            
-            for (std::vector<Alert>::iterator it = alerts.begin() ; it != alerts.end(); ++it) {
-                resultMail += it->MakeHTMLTable();
+        
+            int i = 0;
+            for (i = 0; i < alerts.size(); i++) {
+                resultMail += alerts[i].MakeHTMLTable();
             }
             
             payload_text[0] = resultMail.c_str();

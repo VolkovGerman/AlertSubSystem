@@ -26,11 +26,21 @@ int main(){
     //AlertSubSystem::PutAlert("./d.out", "face", "53", LOW, "runawaay!!w1w1w", CRITICAL);
     //AlertSubSystem::PutAlert("./d.out", "face", "53", HIGH, DEBUG, "runawaay!!w1w1w");
 
+    /*
+    * GET Function
+    */
+    //std::cout << AlertSubSystem::GetAlert("./d.out", "face", "53").SerializeValue() << std::endl;
 
     /*
-    * GET Functions
+    * Priority sorting test
     */
-    std::cout << AlertSubSystem::GetAlert("./d.out", "face", "53").SerializeValue() << std::endl;
+    AlertSubSystem::PutAlert("./a.out", "math", "36", "bad", LOW, CRITICAL);
+    AlertSubSystem::PutAlert("./d.out", "face", "13", "good", HIGH, CRITICAL);
+    AlertSubSystem::PutAlert("./e.out", "vse", "34", "very_bad", LOW, CRITICAL);
+    AlertSubSystem::PutAlert("./b.out", "tut", "76", "worse", LOW, CRITICAL);
+    AlertSubSystem::PutAlert("./c.out", "vse", "34", "better", MEDIUM, CRITICAL);
+    AlertSubSystem::PutAlert("./c1.out", "vse", "34", "much_better", MEDIUM, CRITICAL);
+    AlertSubSystem::PutAlert("./r.out", "sobr", "99", "the_best", HIGH, CRITICAL);
 
     return 0;    
 }

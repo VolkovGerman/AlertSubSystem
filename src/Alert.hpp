@@ -132,7 +132,7 @@ class Alert {
         }
         
         Priority get_priority(){
-            return alert_value_.priority;
+            return this->alert_value_.priority;
         }
         
         std::string get_priority_string(){
@@ -253,9 +253,8 @@ class Alert {
             return this->alert_value_.creation_time;
         }
         
-        std::string get_creation_time_pretty() {   
-            time_t now = time(0);
-            tm *ltm = localtime(&now);
+        std::string get_creation_time_pretty() {  
+            tm *ltm = localtime(&(this->alert_value_.creation_time));
             std::stringstream date;
             date << ltm->tm_mday
                 << "/"
@@ -271,6 +270,50 @@ class Alert {
             std::cout << date.str() << "\n";
             
             return date.str();
+        }
+
+        bool operator <(Alert & alertB) {
+            Priority prA = this->get_priority();
+            Priority prB = alertB.get_priority();
+
+            int numA, numB;
+            switch (prA) {
+                case HIGH:
+                    numA = 3;
+                    break;
+                case MEDIUM:
+                    numA = 2;
+                    break;
+                case LOW:
+                    numA = 1;
+                    break;
+                case NO_PR:
+                    numA = 0;
+                    break;
+            }
+
+            switch (prB) {
+                case HIGH:
+                    numB = 3;
+                    break;
+                case MEDIUM:
+                    numB = 2;
+                    break;
+                case LOW:
+                    numB = 1;
+                    break;
+                case NO_PR:
+                    numB = 0;
+                    break;
+            }
+
+            std::cout << "COOOOMPAAAAAAAAAAAARING" << std::endl;
+
+            std::cout << numA << " ----- " << numB << std::endl;
+
+            std::cout << "//COOOOMPAAAAAAAAAAAARING" << std::endl;
+
+            return (numA - numB >= 0) ? true : false;
         }
         
         // Serialize / Deserialize

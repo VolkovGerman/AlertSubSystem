@@ -6,6 +6,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <algorithm>
 
 #include "Alert.hpp"
 #include "DB.hpp"
@@ -170,6 +171,10 @@ void *alertQueue_processing(void *message) {
         if (alertsToSend.size() != 0){
             // Show all alerts
             // std::cout << alertsToSend.size() << std::endl;
+            for (int i = 0; i < alertsToSend.size(); i++){
+                std::cout << alertsToSend[i].SerializeKey() << std::endl;
+            }
+            std::sort( alertsToSend.begin(), alertsToSend.end() );
             for (int i = 0; i < alertsToSend.size(); i++){
                 std::cout << alertsToSend[i].SerializeKey() << std::endl;
             }
