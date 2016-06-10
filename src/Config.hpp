@@ -240,6 +240,11 @@ public:
 		return 0;
 	}
 
+	std::string GetRecepient() {
+		std::string str = this->data_["definitions"]["defs"]["email"];
+		return str;
+	}
+
 	std::string GetMessage(std::string origin, std::string type, std::string subkey) {
 		json j = this->data_["definitions"]["origins"][origin]["types"][type]["subkeys"][subkey]["defs"]["message"];
 		if (j.is_null()) {

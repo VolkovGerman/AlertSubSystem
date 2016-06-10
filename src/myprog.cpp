@@ -24,7 +24,7 @@ int main(){
     //AlertSubSystem::PutAlert("./d.out", "face", "53", CRITICAL, "runawaay!!w1w1w", LOW);
     //AlertSubSystem::PutAlert("./d.out", "face", "53", CRITICAL, LOW, "runawaay!!w1w1w");
     //AlertSubSystem::PutAlert("./d.out", "face", "53", LOW, "runawaay!!w1w1w", CRITICAL);
-    //AlertSubSystem::PutAlert("./d.out", "face", "53", HIGH, DEBUG, "runawaay!!w1w1w");
+    AlertSubSystem::PutAlert("./d.out", "face", "53", HIGH, DEBUG, "runawaay!!w1w1w");
 
     /*
     * GET Function
@@ -34,6 +34,8 @@ int main(){
     /*
     * Priority sorting test
     */
+
+    /*
     AlertSubSystem::PutAlert("./a.out", "math", "36", "bad", LOW, CRITICAL);
     AlertSubSystem::PutAlert("./d.out", "face", "13", "good", HIGH, CRITICAL);
     AlertSubSystem::PutAlert("./e.out", "vse", "34", "very_bad", LOW, CRITICAL);
@@ -41,6 +43,8 @@ int main(){
     AlertSubSystem::PutAlert("./c.out", "vse", "34", "better", MEDIUM, CRITICAL);
     AlertSubSystem::PutAlert("./c1.out", "vse", "34", "much_better", MEDIUM, CRITICAL);
     AlertSubSystem::PutAlert("./r.out", "sobr", "99", "the_best", HIGH, CRITICAL);
+    */
+
 
     return 0;    
 }

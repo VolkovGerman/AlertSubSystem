@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <queue>
@@ -23,6 +24,19 @@ std::queue<Alert> alertQueue;
 
 std::string Trim(std::string str) {
     return str.substr(1, str.length() - 2);
+}
+
+int LogThis(std::string str) {
+    std::ofstream myfile;
+    time_t t = time(0);
+    struct tm* now = localtime(&t);
+
+    myfile.open("/tmp/alertsubsystem/logs.txt", std::ios::out | std::ios::app);
+    myfile << "[" << now->tm_hour << ":" << now->tm_min << ":" << now->tm_sec << "] " << str << std::endl;
+
+    myfile.close();
+
+    return 0;
 }
 
 int FillAlertFields(Alert &newAlert) {
@@ -64,6 +78,8 @@ std::string MessagesProcessing(std::string reqMessage) {
             
             mail.setRecipient("volkov.german.1997@gmail.com");
             mail.SendAlert(receivedAlert);
+
+            LogThis("Alert was sent immidiatly...")
         } else {
             alertQueue.push(receivedAlert);
         }
@@ -116,33 +132,21 @@ void *alertQueue_processing(void *message) {
     int max_alerts_per_mail = conf.GetMaxAlerts();
     
     while (1){
-        std::cout << "Alert Queue Thread - Start sleeping " << conf.GetPeriodisityTime() << " seconds" << std::endl;
+        LogThis("Alert Queue Thread - Start sleeping...");
         sleep(conf.GetPeriodisityTime());
-        std::cout << "Alert Queue Thread - End sleeping" << std::endl;
+        LogThis("Alert Queue Thread - Wake up...");
         
         // Is there something in queue ?
-        std::cout << "Alert Queue Thread - Watching queue..." << std::endl;
-        std::cout << "Alert Queue Thread - There are " << alertQueue.size() << " new alerts in queue!" << std::endl;
-        std::cout << "Alert Queue Thread - There are " << alertsToSend.size() << " old alerts in queue!" << std::endl;
+        LogThis("Alert Queue Thread - Watching queue...");
+        LogThis("Alert Queue Thread - There are " + (alertQueue.size() + alertsToSend.size()) + " new alerts in queue!");
 
         int alertCount = max_alerts_per_mail - alertsToSend.size();
-        //std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<" << max_alerts_per_mail << std::endl;
         while(!alertQueue.empty() && alertCount--) {
             Alert alertFromQueue = alertQueue.front();
-            
-            // If periodicity is okay - add to vector, and then change state of the alert in database
 
+            // If periodicity is okay - add to vector, and then change state of the alert in database
             // Check periodicity
             time_t alertPeriodicity = conf.GetPeriodisityTime(alertFromQueue.get_origin(), alertFromQueue.get_type(), alertFromQueue.get_subkey());
-            
-            std::cout << "---------------------------------" << std::endl;
-            std::cout << alertPeriodicity << std::endl;
-            std::cout << "---------------------------------" << std::endl;
-            std::cout << alertFromQueue.get_creation_time() << std::endl;
-            std::cout << "---------------------------------" << std::endl;
-            time_t time1 = time(0);
-            std::cout << time1 << std::endl;
-            std::cout << "---------------------------------" << std::endl;
 
             json jAlertFields;
             jAlertFields["origin"] = alertFromQueue.get_origin();
@@ -180,34 +184,32 @@ void *alertQueue_processing(void *message) {
             }
         
             Email mail;
-            mail.setRecipient("volkov.german.1997@gmail.com");
+            Config conf;
+            mail.setRecipient(conf.GetRecepient());
             resOfSending = mail.SendAlerts(alertsToSend);
         }
 
         if (resOfSending == 0) {  
             // Everestring is okay - empty alertsToSend
+            LogThis("Alert Queue Thread - Alerts were sent..."); 
             alertsToSend.clear();
-        }
-        
-        
+        }        
     }
  
     return message;   
 }
 
-int main() {
+int main(int argc, char *argv[]) {
     
-    const char* message = "Heeelllooo!";
-    
+    const char* message = "Done!";
     pthread_t th1;
-    
     
     std::cout << conf.GetMode(); 
     if (conf.GetMode() == "batch"){
         pthread_create(&th1, NULL, alertQueue_processing, (void *)message);
     }
 
-    std::cout << "Daemon started..." << std::endl;
+    LogThis("Daemon started...");
     
     // ZeroMQ init
     zmq::context_t context (1);
@@ -221,7 +223,6 @@ int main() {
         std::string reqMessage = std::string(static_cast<char*>(request.data()), request.size());
         
         std::string res1 = MessagesProcessing(reqMessage);
-        std::cout << "LIMONAD" << res1;
         
         //  Send reply back to client
         zmq::message_t reply (res1.length());
