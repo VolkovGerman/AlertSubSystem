@@ -32,7 +32,7 @@ struct InfoCell {
 class Config {
 private:
 	json data_;
-	std::string data_file_ = "config.json";
+	std::string data_file_ = "/tmp/alertsubsystem/config.json";
 public:
 	Config() {
 		std::string buf;

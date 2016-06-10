@@ -1,3 +1,5 @@
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -76,10 +78,10 @@ std::string MessagesProcessing(std::string reqMessage) {
             
             std::cout << "Alert to email: " << receivedAlert.SerializeKey() << std::endl;
             
-            mail.setRecipient("volkov.german.1997@gmail.com");
+            mail.setRecipient(conf.GetRecepient());
             mail.SendAlert(receivedAlert);
 
-            LogThis("Alert was sent immidiatly...")
+            LogThis("Alert was sent immidiatly...");
         } else {
             alertQueue.push(receivedAlert);
         }
@@ -138,7 +140,7 @@ void *alertQueue_processing(void *message) {
         
         // Is there something in queue ?
         LogThis("Alert Queue Thread - Watching queue...");
-        LogThis("Alert Queue Thread - There are " + (alertQueue.size() + alertsToSend.size()) + " new alerts in queue!");
+        LogThis("Alert Queue Thread - There are some new alerts in queue!");
 
         int alertCount = max_alerts_per_mail - alertsToSend.size();
         while(!alertQueue.empty() && alertCount--) {
@@ -200,7 +202,33 @@ void *alertQueue_processing(void *message) {
 }
 
 int main(int argc, char *argv[]) {
-    
+    /*
+    pid_t pid, sid;
+
+    // Fork the Parent Process
+    pid = fork();
+
+    if (pid < 0) { exit(EXIT_FAILURE); }
+
+    // We got a good pid, Close the Parent Process
+    if (pid > 0) { exit(EXIT_SUCCESS); }
+
+    // Change File Mask
+    umask(0);
+
+    // Create a new Signature Id for our child
+    sid = setsid();
+    if (sid < 0) { exit(EXIT_FAILURE); }
+
+    // Change Directory
+    // If we cant find the directory we exit with failure.
+    if ((chdir("/")) < 0) { exit(EXIT_FAILURE); }
+
+    // Close Standard File Descriptors
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
+    */
     const char* message = "Done!";
     pthread_t th1;
     

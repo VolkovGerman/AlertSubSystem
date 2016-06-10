@@ -8,7 +8,7 @@ int main(){
 
     //AlertSubSystem::PutAlert("./d.out", "face", "53");
 
-    //AlertSubSystem::PutAlert("./d.out", "face", "53", "runawaay!!www");
+    AlertSubSystem::PutAlert("./d.out", "face", "53", "runawaay!!www");
     //AlertSubSystem::PutAlert("./d.out", "face", "53", WARNING);
     //AlertSubSystem::PutAlert("./d.out", "face", "53", MEDIUM);
 
@@ -24,7 +24,7 @@ int main(){
     //AlertSubSystem::PutAlert("./d.out", "face", "53", CRITICAL, "runawaay!!w1w1w", LOW);
     //AlertSubSystem::PutAlert("./d.out", "face", "53", CRITICAL, LOW, "runawaay!!w1w1w");
     //AlertSubSystem::PutAlert("./d.out", "face", "53", LOW, "runawaay!!w1w1w", CRITICAL);
-    AlertSubSystem::PutAlert("./d.out", "face", "53", HIGH, DEBUG, "runawaay!!w1w1w");
+    //AlertSubSystem::PutAlert("./d.out", "face", "53", HIGH, DEBUG, "runawaay!!w1w1w");
 
     /*
     * GET Function

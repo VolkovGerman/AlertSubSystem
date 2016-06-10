@@ -411,8 +411,6 @@ namespace AlertSubSystem{
         
         std::string replyStr = SendToDaemon(j.dump());
         resAlert.Deserialize(replyStr);
-
-        std::cout << "LIMONADDDDDDDDDD " << resAlert.SerializeValue();
         
         return resAlert;
     }

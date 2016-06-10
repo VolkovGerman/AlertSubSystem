@@ -11,7 +11,7 @@ using json = nlohmann::json;
 
 class DB {
     private:
-        std::string data_file_ = "./db/all_data.json";      
+        std::string data_file_ = "/tmp/alertsubsystem/db.json";      
     
     public:
         DB(){};
